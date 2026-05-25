@@ -17,8 +17,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
+RUN npm install -g @openai/codex
+
 COPY --from=builder /app/.output ./.output
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["./entrypoint.sh"]
