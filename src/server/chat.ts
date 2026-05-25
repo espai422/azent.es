@@ -11,6 +11,6 @@ export const sendMessage = createServerFn({ method: 'POST' })
   })
   .handler(async ({ data }) => {
     const thread = codex.startThread()
-    const result = await thread.run(data.message)
+    const result = await thread.run(data.message, { skipGitRepoCheck: true })
     return { reply: result.finalResponse }
   })
