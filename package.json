@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@openai/codex-sdk": "^0.133.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
