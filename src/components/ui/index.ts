@@ -1,7 +1,0 @@
-export { Eyebrow } from './Eyebrow'
-export { Button } from './Button'
-export { Badge } from './Badge'
-export { Card } from './Card'
-export { TraceRow, TracePanel } from './AgentTrace'
-export type { TraceEntry, TraceStatus } from './AgentTrace'
-export { AIHead } from './AIHead'
