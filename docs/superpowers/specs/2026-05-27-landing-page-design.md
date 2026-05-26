@@ -117,7 +117,21 @@ No buscamos clientes. Buscamos empresas que quieran operar diferente.
 - **Bloque 07 y 08 visualmente conectados**: el texto intro y las tarjetas forman un único bloque sin separación visual clara, para que el "cuánto estás dejando" fluya directamente hacia los números.
 - **Ejemplos en formato tarjeta** con número grande como elemento de shock visual. Los números son el remate concreto del argumento abstracto anterior.
 - **Paleta:** oscura (consistente con el estilo actual del proyecto: negro/blanco/grises).
-- **Tipografía:** la del sistema actual, sin añadir fuentes nuevas por ahora.
+- **Tipografía:** añadir una fuente externa de calidad (ej. Geist, Inter o similar). Una sola familia, bien configurada en `styles.css`.
+
+## Filosofía de implementación (importante)
+
+El objetivo es construir una **maqueta estructuralmente sólida**, no una página terminada visualmente. Esto significa:
+
+- **Tailwind solo para layout**: espaciado, tipografía, grid. Sin colores decorativos, sombras, bordes ornamentales ni efectos visuales que luego haya que deshacer.
+- **Layouts variados por sección**: no todas las secciones son una columna de texto centrada. Cada sección tiene su propio tratamiento espacial para crear jerarquía visual y ritmo de scroll. Ejemplos:
+  - Hero: tipo grande, padding generoso, ocupa gran parte del viewport
+  - Cuestionamos el sistema: puede justificarse a izquierda con más anchura, o con el título en una columna y el cuerpo en otra
+  - Ejemplos: grid de tarjetas (2 columnas en desktop, 1 en móvil)
+  - Cierre: tipografía pequeña, mucho espacio en blanco, centrado
+- **Componentizado**: cada sección es un componente React independiente. La ruta `index.tsx` los compone.
+- **Style-ready**: la estructura HTML y las clases de layout deben ser las definitivas. Cuando se aplique el design system, solo se añaden clases de color, tipografía avanzada y efectos — no se reestructura el HTML.
+- **Sin relleno**: no se añaden elementos decorativos (líneas, iconos, separadores) que no estén justificados por el contenido.
 
 ## Lo que esta landing NO incluye (deliberadamente)
 
