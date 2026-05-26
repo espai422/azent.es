@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Hero } from '#/components/landing/Hero'
 
@@ -10,6 +10,8 @@ describe('Hero', () => {
 
   it('renders the body text', () => {
     render(<Hero />)
-    screen.getAllByText(/Desarrollo de software e inteligencia artificial aplicada al negocio real/)
+    screen.getAllByText(
+      /Desarrollo de software e inteligencia artificial aplicada al negocio real/
+    )
   })
 })
