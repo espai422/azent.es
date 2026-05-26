@@ -1,4 +1,289 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
 @import "tailwindcss";
 
+/* =====================================================================
+   AZENT — Design Tokens
+   Dark-mode-first. Orange is the signal, jet-black is the canvas.
+   ===================================================================== */
+
+:root {
+  /* CORE PALETTE */
+  --orange-50:  #FFF1E8;
+  --orange-100: #FFD9BF;
+  --orange-200: #FFB68A;
+  --orange-300: #FF8F52;
+  --orange-400: #FF7333;
+  --orange-500: #FF5A1F;
+  --orange-600: #E64A12;
+  --orange-700: #B8380A;
+  --orange-800: #862807;
+  --orange-900: #4F1804;
+
+  /* NEUTRALS — cool-black canvas */
+  --ink-0:  #000000;
+  --ink-1:  #0A0A0A;
+  --ink-2:  #111111;
+  --ink-3:  #1A1A1A;
+  --ink-4:  #242424;
+  --ink-5:  #2E2E2E;
+  --ink-6:  #4A4A4A;
+  --ink-7:  #6B6B6B;
+  --ink-8:  #9A9A9A;
+  --ink-9:  #C4C4C4;
+  --ink-10: #E6E6E6;
+  --ink-11: #F5F5F5;
+  --ink-12: #FFFFFF;
+
+  /* SEMANTIC FEEDBACK */
+  --success: #2BD27A;
+  --warn:    #F5A524;
+  --danger:  #F23B3B;
+  --info:    var(--orange-500);
+
+  /* SEMANTIC FOREGROUNDS */
+  --fg-primary:   var(--ink-12);
+  --fg-secondary: var(--ink-9);
+  --fg-muted:     var(--ink-7);
+  --fg-faint:     var(--ink-6);
+  --fg-inverse:   var(--ink-1);
+  --fg-accent:    var(--orange-500);
+  --fg-accent-hi: var(--orange-400);
+
+  /* SEMANTIC BACKGROUNDS */
+  --bg-canvas:      var(--ink-1);
+  --bg-surface:     var(--ink-2);
+  --bg-raised:      var(--ink-3);
+  --bg-inverse:     var(--ink-12);
+  --bg-accent:      var(--orange-500);
+  --bg-accent-soft: rgba(255, 90, 31, 0.10);
+
+  /* BORDERS */
+  --border-subtle:  var(--ink-4);
+  --border-default: var(--ink-5);
+  --border-strong:  var(--ink-6);
+  --border-accent:  var(--orange-500);
+
+  /* TYPE FAMILIES */
+  --font-display: "Space Grotesk", "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* TYPE SCALE */
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-36: 2.25rem;
+  --fs-48: 3rem;
+  --fs-60: 3.75rem;
+  --fs-72: 4.5rem;
+  --fs-96: 6rem;
+
+  /* LINE HEIGHTS */
+  --lh-tight:   1.05;
+  --lh-snug:    1.18;
+  --lh-normal:  1.45;
+  --lh-relaxed: 1.65;
+
+  /* LETTER SPACING */
+  --tracking-tightest: -0.04em;
+  --tracking-tight:    -0.02em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.04em;
+  --tracking-wider:    0.08em;
+  --tracking-widest:   0.18em;
+
+  /* WEIGHTS */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* SPACING */
+  --space-1:  2px;
+  --space-2:  4px;
+  --space-3:  8px;
+  --space-4:  12px;
+  --space-5:  16px;
+  --space-6:  20px;
+  --space-7:  24px;
+  --space-8:  32px;
+  --space-9:  40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 80px;
+  --space-13: 96px;
+  --space-14: 128px;
+  --space-15: 160px;
+
+  /* RADII */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;
+  --radius-pill: 9999px;
+
+  /* SHADOWS */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+
+  /* ORANGE GLOW */
+  --glow-orange-sm: 0 0 0 1px rgba(255, 90, 31, 0.4), 0 0 16px rgba(255, 90, 31, 0.18);
+  --glow-orange-md: 0 0 0 1px rgba(255, 90, 31, 0.5), 0 0 32px rgba(255, 90, 31, 0.28);
+  --glow-orange-lg: 0 0 48px rgba(255, 90, 31, 0.45);
+
+  --inner-border: inset 0 0 0 1px var(--border-subtle);
+
+  /* MOTION */
+  --ease-out:    cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-instant: 80ms;
+  --dur-fast:    150ms;
+  --dur-base:    220ms;
+  --dur-slow:    400ms;
+  --dur-grand:   800ms;
+
+  /* Z-INDEX */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-overlay: 1000;
+  --z-modal:   1100;
+  --z-toast:   1200;
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
 * { box-sizing: border-box; }
-body { margin: 0; }
+
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-relaxed);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =====================================================================
+   TYPOGRAPHY UTILITY CLASSES
+   ===================================================================== */
+
+.az-display {
+  font-family: var(--font-display);
+  font-size: var(--fs-72);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+}
+
+.az-h1 {
+  font-family: var(--font-display);
+  font-size: var(--fs-48);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+}
+
+.az-h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-36);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+}
+
+.az-h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  color: var(--fg-primary);
+}
+
+.az-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-secondary);
+}
+
+.az-body-sm {
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-secondary);
+}
+
+.az-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--fg-accent);
+}
+
+.az-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+  color: var(--fg-secondary);
+}
+
+.az-code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  padding: 2px 6px;
+  background: var(--ink-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--orange-300);
+}
+
+/* =====================================================================
+   ANIMATIONS
+   ===================================================================== */
+
+@keyframes az-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes az-glow-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes az-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

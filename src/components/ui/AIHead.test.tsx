@@ -11,6 +11,13 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
 }))
 
+vi.mock('three/addons/math/MeshSurfaceSampler.js', () => ({
+  MeshSurfaceSampler: vi.fn(function (this: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    this.build = vi.fn().mockReturnThis()
+    this.sample = vi.fn()
+  }),
+}))
+
 vi.mock('@react-three/drei', () => ({
   useGLTF: Object.assign(
     vi.fn(() => ({

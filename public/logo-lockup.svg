@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" fill="none">
+  <g>
+    <path d="M30 180 L66 180 L122 30 L86 30 Z" fill="#FF5A1F"></path>
+    <path d="M114 78 L140 78 L178 180 L152 180 Z" fill="#FF5A1F"></path>
+  </g>
+  <text x="225" y="138" font-family="&#39;Space Grotesk&#39;, &#39;Sora&#39;, system-ui, sans-serif" font-size="116" font-weight="600" letter-spacing="6" fill="#FFFFFF">AZENT<tspan fill="#FF5A1F">.</tspan></text>
+</svg>

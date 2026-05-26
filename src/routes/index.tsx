@@ -185,8 +185,8 @@ function LandingHero() {
           <div
             style={{
               position: 'relative',
-              width: 340,
-              height: 340,
+              width: '100%',
+              aspectRatio: '1 / 1',
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-2xl)',
