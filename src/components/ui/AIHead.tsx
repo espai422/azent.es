@@ -36,7 +36,8 @@ function HeadPointCloud() {
     // Primer paso: calcular rango Z global
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const pos = child.geometry.attributes.position as THREE.BufferAttribute
+        const pos = child.geometry.attributes.position
+        if (!(pos instanceof THREE.BufferAttribute)) return
         child.updateWorldMatrix(true, false)
         const mat = child.matrixWorld
         const v = new THREE.Vector3()
@@ -51,7 +52,8 @@ function HeadPointCloud() {
     // Segundo paso: extraer posiciones y colores
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const pos = child.geometry.attributes.position as THREE.BufferAttribute
+        const pos = child.geometry.attributes.position
+        if (!(pos instanceof THREE.BufferAttribute)) return
         const mat = child.matrixWorld
         const v = new THREE.Vector3()
         for (let i = 0; i < pos.count; i++) {
@@ -100,9 +102,7 @@ function HeadPointCloud() {
   )
 }
 
-if (typeof useGLTF.preload === 'function') {
-  useGLTF.preload('/models/LeePerrySmith.glb')
-}
+useGLTF.preload('/models/LeePerrySmith.glb')
 
 // ─── Componente público ───────────────────────────────────────────────────────
 

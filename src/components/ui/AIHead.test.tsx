@@ -12,11 +12,14 @@ vi.mock('@react-three/fiber', () => ({
 }))
 
 vi.mock('@react-three/drei', () => ({
-  useGLTF: vi.fn(() => ({
-    scene: {
-      traverse: vi.fn(),
-    },
-  })),
+  useGLTF: Object.assign(
+    vi.fn(() => ({
+      scene: {
+        traverse: vi.fn(),
+      },
+    })),
+    { preload: vi.fn() }
+  ),
 }))
 
 // ─── Tests de la función pura depthToColor ────────────────────────────────────
