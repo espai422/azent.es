@@ -1,97 +1,202 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
-import { sendMessage } from '../server/chat'
+import { Eyebrow, Button, AIHead } from '#/components/ui'
+import { Nav, Footer } from '#/components/layout'
+import { CTA, Offering, Philosophy, Differentiators } from '#/components/sections'
 
-export const Route = createFileRoute('/')({ component: Chat })
+export const Route = createFileRoute('/')({ component: Landing })
 
-type Message = { role: 'user' | 'assistant'; content: string }
+const navLinks = [
+  { label: 'Qué hacemos', href: '#ofrecemos' },
+  { label: 'Filosofía',   href: '#filosofia' },
+  { label: 'Diferencia',  href: '#diferencia' },
+  { label: 'Contacto',    href: '#contacto' },
+]
 
-function Chat() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
-
-  async function send() {
-    const text = input.trim()
-    if (!text || loading) return
-
-    setInput('')
-    setMessages((prev) => [...prev, { role: 'user', content: text }])
-    setLoading(true)
-
-    try {
-      const data = await sendMessage({ data: { message: text } })
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: data.reply ?? 'Error' },
-      ])
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: err instanceof Error ? err.message : 'Error' },
-      ])
-    } finally {
-      setLoading(false)
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-    }
-  }
-
+function Landing() {
   return (
-    <div className="flex h-screen flex-col bg-white">
-      {/* messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="mx-auto max-w-2xl space-y-4">
-          {messages.length === 0 && (
-            <p className="text-center text-sm text-gray-400">Escribe un mensaje para empezar.</p>
-          )}
-          {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  m.role === 'user'
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                <pre className="whitespace-pre-wrap font-sans">{m.content}</pre>
+    <div style={{ background: 'var(--bg-canvas)', minHeight: '100vh' }}>
+      <Nav links={navLinks} ctaLabel="Habla con nosotros" />
+
+      {/* ── HERO / CTA ─────────────────────────────────────── */}
+      <LandingHero />
+
+      {/* ── QUÉ OFRECEMOS ─────────────────────────────────── */}
+      <div id="ofrecemos">
+        <Offering />
+      </div>
+
+      {/* ── FILOSOFÍA ─────────────────────────────────────── */}
+      <div id="filosofia">
+        <Philosophy />
+      </div>
+
+      {/* ── LO QUE NOS DIFERENCIA ─────────────────────────── */}
+      <div id="diferencia">
+        <Differentiators />
+      </div>
+
+      {/* ── CTA INFERIOR ──────────────────────────────────── */}
+      <div id="contacto">
+        <CTA />
+      </div>
+
+      <Footer />
+    </div>
+  )
+}
+
+function LandingHero() {
+  return (
+    <section
+      style={{
+        position: 'relative',
+        padding: '130px 48px 120px',
+        maxWidth: 1280,
+        margin: '0 auto',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Ambient glow */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '10%',
+          right: '8%',
+          width: 560,
+          height: 560,
+          background: 'radial-gradient(circle, rgba(255,90,31,0.15), transparent 70%)',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'az-glow-breathe 6s ease-in-out infinite',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'grid',
+          gridTemplateColumns: '1.3fr 1fr',
+          gap: 64,
+          alignItems: 'center',
+        }}
+      >
+        {/* Copy */}
+        <div>
+          <Eyebrow>AZENT — ESTUDIO DE IA · MALLORCA</Eyebrow>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(52px, 6vw, 88px)',
+              fontWeight: 'var(--fw-semibold)',
+              lineHeight: 1.02,
+              letterSpacing: '-0.03em',
+              color: 'var(--fg-primary)',
+              margin: '24px 0 28px',
+            }}
+          >
+            La IA que{' '}
+            <span style={{ color: 'var(--fg-accent)' }}>transforma</span>
+            .<br />
+            No la que impresiona.
+          </h1>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 19,
+              lineHeight: 1.6,
+              color: 'var(--fg-secondary)',
+              margin: '0 0 40px',
+              maxWidth: 520,
+            }}
+          >
+            Diseñamos, construimos y desplegamos sistemas de inteligencia artificial
+            que generan ventaja competitiva real para tu negocio — sin demos vacías,
+            sin humo.
+          </p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              size="lg"
+              rightIcon={<span>→</span>}
+              onClick={() =>
+                document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })
+              }
+            >
+              Agenda una llamada
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() =>
+                document.getElementById('ofrecemos')?.scrollIntoView({ behavior: 'smooth' })
+              }
+            >
+              Ver qué hacemos
+            </Button>
+          </div>
+
+          {/* Social proof strip */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 24,
+              marginTop: 48,
+              paddingTop: 32,
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            {[
+              { value: '+12k', label: 'horas automatizadas' },
+              { value: '4 sem', label: 'de idea a producción' },
+              { value: '100%', label: 'proyectos entregados' },
+            ].map((s) => (
+              <div key={s.label}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--fs-24)',
+                    fontWeight: 'var(--fw-semibold)',
+                    color: 'var(--fg-primary)',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  {s.value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--fs-12)',
+                    color: 'var(--fg-muted)',
+                    marginTop: 2,
+                  }}
+                >
+                  {s.label}
+                </div>
               </div>
-            </div>
-          ))}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="rounded-2xl bg-gray-100 px-4 py-2.5 text-sm text-gray-400">
-                <span className="animate-pulse">···</span>
-              </div>
-            </div>
-          )}
-          <div ref={bottomRef} />
+            ))}
+          </div>
+        </div>
+
+        {/* AI Head */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div
+            style={{
+              position: 'relative',
+              width: 340,
+              height: 340,
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-2xl)',
+              overflow: 'hidden',
+            }}
+          >
+            <AIHead />
+          </div>
         </div>
       </div>
-
-      {/* input */}
-      <div className="border-t border-gray-100 px-4 py-4">
-        <form
-          className="mx-auto flex max-w-2xl gap-2"
-          onSubmit={(e) => { e.preventDefault(); send() }}
-        >
-          <input
-            className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gray-400"
-            placeholder="Escribe un mensaje..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={loading}
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"
-          >
-            Enviar
-          </button>
-        </form>
-      </div>
-    </div>
+    </section>
   )
 }
