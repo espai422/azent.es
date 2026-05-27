@@ -34,13 +34,13 @@ export function FlipSection({ id, shape, back, children }: Props) {
   }, [])
 
   return (
-    <div style={{ clipPath: shape, background: '#0c0c0c', perspective: '700px' }}>
+    <div style={{ perspective: '700px' }}>
       <div
         ref={cardRef}
         className="flip-card"
         data-state={flipped ? 'back' : 'front'}
         data-animating={animState !== 'idle' ? animState : undefined}
-        style={{ cursor: canFlip ? 'pointer' : '' }}
+        style={{ clipPath: shape, background: '#0c0c0c', cursor: canFlip ? 'pointer' : '' }}
         onClick={canFlip ? () => toggle(id) : undefined}
       >
         <div className="flip-face-front">{children}</div>
