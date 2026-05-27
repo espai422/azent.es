@@ -89,20 +89,124 @@ El naranja **no se usa** en los bordes entre secciones. Los bordes son simplemen
 
 ---
 
-## 3. Tipografía de bloque
+## 3. Modelo de contenido y Block Prose
 
-Estilos disponibles dentro de un bloque (tokens Tailwind v4):
+### Cómo llega el contenido
 
-| Elemento      | Tailwind classes                                        | Notas                              |
-|---------------|---------------------------------------------------------|------------------------------------|
-| H1            | `text-4xl md:text-6xl font-semibold tracking-tight`     | Solo en Hero                       |
-| H2            | `text-2xl md:text-3xl font-semibold tracking-tight`     | Heading principal de bloque        |
-| H3            | `text-lg md:text-xl font-medium tracking-tight`         | Subheading o bloque secundario     |
-| Body          | `text-base leading-relaxed`                             | Párrafo principal                  |
-| Body small    | `text-sm leading-relaxed`                               | Secundario, closing                |
-| Bold inline   | `font-semibold`                                         | Énfasis dentro de párrafo          |
-| Strikethrough | `line-through opacity-40`                               | Para contraste editorial           |
-| Accent span   | `text-[#ff6b2b]`                                        | Palabras clave en heading (opt.)   |
+El LLM inyecta HTML directamente en el bloque. `SectionConfig.content` es un string de HTML que se renderiza con `dangerouslySetInnerHTML`. El componente no interpreta el HTML — solo lo contiene y lo estiliza.
+
+```ts
+// El LLM genera algo como:
+const content = `
+  <h2>Hay un <span class="accent">antes y un después</span> de la IA.</h2>
+  <p>El mercado vende atajos. Los atajos no transforman nada.</p>
+  <p><strong>Nosotros operamos al revés.</strong> Entendemos bien qué puede hacer la IA hoy.</p>
+`
+addSection({ content, rule: true })
+```
+
+### Block Prose stylesheet (`.block-content`)
+
+Una clase CSS `.block-content` estiliza todos los tags que el LLM pueda generar. Los colores se adaptan al tema del bloque mediante el atributo `data-theme` en el contenedor de sección.
+
+```css
+/* Variables por tema — aplicadas en el <section data-theme="dark-1|dark-2|light-1|light-2|closing"> */
+[data-theme="dark-1"],
+[data-theme="dark-2"],
+[data-theme="closing"] {
+  --prose-heading: #e8e8e8;
+  --prose-body: #aaaaaa;
+  --prose-muted: #444444;
+  --prose-accent: #ff6b2b;
+  --prose-strong: #e8e8e8;
+  --prose-strike-opacity: 0.25;
+  --prose-code-bg: #1e1e1e;
+  --prose-code-color: #888888;
+}
+
+[data-theme="light-1"],
+[data-theme="light-2"] {
+  --prose-heading: #111111;
+  --prose-body: #555555;
+  --prose-muted: #999999;
+  --prose-accent: #e55a1a;   /* naranja ligeramente más oscuro sobre blanco */
+  --prose-strong: #111111;
+  --prose-strike-opacity: 0.3;
+  --prose-code-bg: #eeeeee;
+  --prose-code-color: #555555;
+}
+
+.block-content h1 {
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--prose-heading);
+  margin-bottom: 1.5rem;
+}
+.block-content h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--prose-heading);
+  margin-bottom: 1rem;
+}
+.block-content h3 {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--prose-heading);
+  margin-bottom: 0.75rem;
+}
+.block-content p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--prose-body);
+  margin-bottom: 1rem;
+}
+.block-content p:last-child { margin-bottom: 0; }
+.block-content strong { font-weight: 600; color: var(--prose-strong); }
+.block-content em { font-style: italic; }
+.block-content s, .block-content del {
+  text-decoration: line-through;
+  opacity: var(--prose-strike-opacity);
+}
+.block-content .accent, .block-content [data-accent] {
+  color: var(--prose-accent);
+}
+.block-content code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875em;
+  background: var(--prose-code-bg);
+  color: var(--prose-code-color);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+.block-content ul, .block-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--prose-body);
+}
+.block-content li { margin-bottom: 0.35rem; line-height: 1.6; }
+.block-content ul { list-style-type: disc; }
+.block-content ol { list-style-type: decimal; }
+```
+
+### Contenedor flexible
+
+El bloque crece con el contenido. El `clip-path` usa `calc(100% - 12px)` para la tab, que es relativo a la altura real del elemento — funciona con cualquier altura de contenido sin bugs. El padding inferior del bloque garantiza que el contenido no quede cortado por la tab:
+
+```css
+.block-section {
+  padding-bottom: calc(1.5rem + 12px);  /* espacio de contenido + profundidad de tab */
+}
+/* Para secciones closing: sin tab, padding normal */
+.block-section[data-tab="none"] {
+  padding-bottom: 1.5rem;
+}
+```
 
 ---
 
@@ -118,20 +222,10 @@ type TabVariant = 'center' | 'right' | 'left' | 'none'
 
 interface SectionConfig {
   id: string
-  // Si se omite, se auto-asigna por posición en el array
-  theme?: SectionTheme
-  tab?: TabVariant
-  // Contenido
-  heading?: string
-  headingLevel?: 'h1' | 'h2' | 'h3'
-  accentWords?: string[]        // palabras del heading que van en naranja
-  rule?: boolean                // línea naranja antes del heading
-  body?: string
-  children?: ReactNode
-}
-
-interface SectionsState {
-  sections: SectionConfig[]
+  theme?: SectionTheme   // auto-asignado si se omite
+  tab?: TabVariant       // auto-asignado si se omite; 'none' forzado si theme === 'closing'
+  rule?: boolean         // línea naranja decorativa antes del contenido (default: false)
+  content: string        // HTML que renderiza el LLM — se usa con dangerouslySetInnerHTML
 }
 
 type SectionsAction =
@@ -178,16 +272,33 @@ interface BlockProps {
 
 ## 5. Secciones actuales — mapeado inicial
 
-| Sección          | Índice | Theme   | Tab    | Acento       |
-|------------------|--------|---------|--------|--------------|
-| Hero             | 0      | dark-1  | center | —            |
-| Context          | 1      | light-2 | right  | rule         |
-| Partner          | 2      | dark-2  | left   | —            |
-| SystemChallenge  | 3      | light-1 | center | accentWords  |
-| HowWeWork        | 4      | dark-1  | right  | rule         |
-| Philosophy       | 5      | light-2 | left   | accentWords  |
-| Examples         | 6      | closing | none   | —            |
-| Closing          | 7      | closing | none   | —            |
+El contenido de cada sección existente se migra a HTML estático dentro de `content`. Los componentes individuales en `src/components/landing/` se eliminan — su markup pasa a ser el string `content` de cada config.
+
+| Sección          | Índice | Theme   | Tab    | rule  |
+|------------------|--------|---------|--------|-------|
+| Hero             | 0      | dark-1  | center | false |
+| Context          | 1      | light-2 | right  | true  |
+| Partner          | 2      | dark-2  | left   | false |
+| SystemChallenge  | 3      | light-1 | center | false |
+| HowWeWork        | 4      | dark-1  | right  | true  |
+| Philosophy       | 5      | light-2 | left   | false |
+| Examples         | 6      | closing | none   | false |
+| Closing          | 7      | closing | none   | false |
+
+Ejemplo de config para "Context":
+```ts
+{
+  theme: 'light-2',
+  rule: true,
+  content: `
+    <h2>Hay un <span class="accent">antes y un después</span> de la IA. Pocas empresas han cruzado esa línea.</h2>
+    <p>No porque la tecnología no esté disponible. Sino porque aplicarla bien requiere
+    entender a fondo el negocio, los procesos y los límites reales de la IA — y eso
+    no viene en ningún SaaS genérico. El mercado vende atajos. Los atajos no
+    transforman nada.</p>
+  `
+}
+```
 
 ---
 
