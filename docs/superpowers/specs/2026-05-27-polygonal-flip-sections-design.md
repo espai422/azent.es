@@ -83,11 +83,13 @@ Todos los componentes de sección existentes (`Hero.tsx`, `Context.tsx`, etc.) p
 </FlipSection>
 ```
 
-| Prop    | Tipo        | Descripción                              |
-|---------|-------------|------------------------------------------|
-| `id`    | `string`    | Identificador único en el FlipProvider   |
-| `shape` | `string`    | Valor CSS `clip-path` del polígono       |
-| `back`  | `ReactNode` | Contenido de la cara trasera             |
+| Prop    | Tipo                   | Descripción                                                  |
+|---------|------------------------|--------------------------------------------------------------|
+| `id`    | `string`               | Identificador único en el FlipProvider                       |
+| `shape` | `string`               | Valor CSS `clip-path` del polígono                           |
+| `back`  | `ReactNode` (opcional) | Contenido de la cara trasera. Si es `undefined`, el flip queda desactivado |
+
+**Lógica de activación:** si `back` es `undefined` o `null`, el componente no registra el handler de click y no aplica `cursor:pointer`. El `toggle` del store tampoco se llama. La sección se comporta como un `PolygonSection` normal.
 
 ### `<PolygonSection>`
 
@@ -163,7 +165,27 @@ Los valores exactos se ajustan durante la implementación. Orientación de cada 
 
 ## Contenido de caras traseras
 
-TBD — los componentes `*Back.tsx` se crean como placeholders vacíos. El contenido se definirá en una iteración posterior.
+Los componentes `*Back.tsx` se crean con **texto mock** para que el flip sea visible y testeable desde el primer momento. El contenido real se definirá en una iteración posterior.
+
+El mock sigue esta estructura para todas las secciones:
+
+```tsx
+export function ContextBack() {
+  return (
+    <div className="px-6 py-24 md:px-16">
+      <p className="text-xs font-medium uppercase tracking-widest text-neutral-600 mb-4">
+        — back —
+      </p>
+      <p className="max-w-xl leading-relaxed text-neutral-400">
+        Contenido de la cara trasera de Context. Lorem ipsum dolor sit amet,
+        consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
+      </p>
+    </div>
+  )
+}
+```
+
+Cada `*Back.tsx` usa el nombre de su sección en la etiqueta `— back —` para distinguirlas durante desarrollo.
 
 ---
 
@@ -171,5 +193,6 @@ TBD — los componentes `*Back.tsx` se crean como placeholders vacíos. El conte
 
 Cada nuevo componente tiene su archivo `.test.tsx` siguiendo el patrón existente en `src/components/landing/`. Los tests verifican:
 - `FlipSection` renderiza `children` y `back`.
+- `FlipSection` sin `back` no registra click handler ni aplica cursor pointer.
 - `useFlipControls` — `toggle`, `set`, `resetAll` actualizan el estado correctamente.
 - `PolygonSection` renderiza `children`.
