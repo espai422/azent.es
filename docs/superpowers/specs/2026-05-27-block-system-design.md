@@ -302,21 +302,134 @@ Ejemplo de config para "Context":
 
 ---
 
-## 6. Archivos afectados
+## 6. Mobile
+
+El sistema de bloques debe funcionar bien desde 320px. El clip-path es porcentual — las lengüetas escalan proporcionalmente en cualquier ancho.
+
+### Padding responsivo de sección
+
+```css
+.block-section {
+  padding-left: 1.5rem;    /* 24px mobile */
+  padding-right: 1.5rem;
+  padding-top: 4rem;       /* 64px mobile */
+  padding-bottom: calc(4rem + 12px);
+}
+@media (min-width: 768px) {
+  .block-section {
+    padding-left: 4rem;    /* 64px desktop */
+    padding-right: 4rem;
+    padding-top: 6rem;
+    padding-bottom: calc(6rem + 12px);
+  }
+}
+```
+
+### Ancho máximo del contenido
+
+El contenido dentro de `.block-content` no ocupa todo el ancho — está contenido en `max-width: 42rem` para que los párrafos no sean ilegibles en pantallas anchas. En móvil ocupa el 100% disponible dentro del padding de sección.
+
+### Tipografía responsive
+
+Los tamaños de heading ya usan `clamp()`:
+- `h2`: `clamp(1.5rem, 3vw, 2rem)` — funciona en 320px y en 1440px
+- `h3`: `clamp(1.1rem, 2vw, 1.35rem)`
+
+La body (`1rem / 16px`) es fija — no hace falta escalar.
+
+### Comportamiento de la tab en móvil
+
+Las posiciones center/right/left son porcentuales (15%–85%). En un móvil de 375px la tab mide ~105px de ancho y 12px de profundidad — proporcional y sin bugs visuales. No hay ajuste especial para móvil en las formas.
+
+### Hero en móvil
+
+El bloque Hero (índice 0) mantiene `min-height: 85vh` en desktop. En móvil se reduce a `min-height: 70vh` para dejar espacio visible al siguiente bloque sin scroll.
+
+---
+
+## 7. LLM Content Guide
+
+### Archivo
+
+`BLOCK_CONTENT_GUIDE.md` en la raíz del proyecto. Este archivo es el contrato entre el sistema de bloques y el LLM que genera contenido. Se mantiene actualizado cuando cambia la Block Prose stylesheet.
+
+### Contenido del archivo
+
+El archivo debe explicar:
+
+**Tags disponibles y su efecto visual:**
+
+| Tag | Resultado |
+|-----|-----------|
+| `<h2>texto</h2>` | Heading principal del bloque — grande, peso 600 |
+| `<h3>texto</h3>` | Subheading — mediano, peso 500 |
+| `<p>texto</p>` | Párrafo de cuerpo — color secundario |
+| `<strong>texto</strong>` | Negrita — color heading |
+| `<em>texto</em>` | Itálica |
+| `<s>texto</s>` | Tachado con opacidad reducida |
+| `<span class="accent">texto</span>` | Naranja — para palabras clave en headings |
+| `<code>texto</code>` | Monospace con fondo sutil |
+| `<ul><li>…</li></ul>` | Lista con bullet |
+| `<ol><li>…</li></ol>` | Lista numerada |
+
+**Lo que NO funciona (límites duros):**
+
+- `style="..."` — el CSS inline se ignora; el bloque tiene su propio sistema de color
+- Clases CSS personalizadas distintas de `accent` — no tienen efecto
+- `<img>` — sin soporte de imágenes por ahora
+- `<a>` — sin soporte de links por ahora
+- `<h1>` — reservado para el Hero; usar `<h2>` como máximo
+- `<div>`, `<section>`, `<table>` — no tienen estilos definidos, producen layout roto
+- `<script>`, `<iframe>` — bloqueados por seguridad
+
+**Límites de longitud (para que el bloque no rompa en móvil):**
+
+| Elemento | Máximo recomendado |
+|----------|--------------------|
+| `<h2>` | 80 caracteres — se muestra en 2-3 líneas en móvil |
+| `<h3>` | 120 caracteres |
+| `<p>` | 400 caracteres por párrafo |
+| Bloques totales de `<p>` por sección | 3 párrafos máximo |
+| Items de lista | 8 items máximo |
+
+**Patrones correctos:**
+
+```html
+<!-- Con accent en heading y párrafo -->
+<h2>Hay un <span class="accent">antes y un después</span> de la IA.</h2>
+<p>El mercado vende atajos. <strong>Los atajos no transforman nada.</strong></p>
+
+<!-- Con subheading y lista -->
+<h3>Lo que hacemos</h3>
+<ul>
+  <li>Desarrollo de software a medida</li>
+  <li>Automatización de procesos con IA</li>
+  <li><s>Consultoras de PowerPoint</s></li>
+</ul>
+
+<!-- Contraste editorial con tachado -->
+<h2><s>Agilidad</s>. Impacto real.</h2>
+<p>No buscamos velocidad. Buscamos que lo que construimos funcione.</p>
+```
+
+---
+
+## 8. Archivos afectados
 
 | Archivo | Cambio |
 |---------|--------|
 | `src/components/sections/SectionContext.tsx` | Nuevo — Provider + hook + tipos |
 | `src/components/sections/Block.tsx` | Nuevo — componente de bloque renderizado |
 | `src/components/sections/index.ts` | Nuevo — re-exports |
-| `src/styles.css` | Añadir variables CSS para tokens de color y clip-paths |
-| `src/routes/index.tsx` | Reemplazar secciones individuales — `Landing` itera `sections` del context y renderiza `<Block />` por cada uno |
-| `src/components/landing/*.tsx` | Cada componente se migra a `SectionConfig` o se elimina |
-| `src/routes/__root.tsx` | Envolver en `SectionProvider` si el scope lo requiere |
+| `src/styles.css` | Block Prose stylesheet + tokens de color + clip-path classes + responsive |
+| `src/routes/index.tsx` | Reemplazar secciones individuales — `Landing` itera `sections` del context y renderiza `<Block />` |
+| `src/components/landing/*.tsx` | Eliminados — su contenido pasa a `SectionConfig.content` como HTML |
+| `src/routes/__root.tsx` | Envolver en `SectionProvider` |
+| `BLOCK_CONTENT_GUIDE.md` | Nuevo en raíz — guía para el LLM que genera contenido HTML |
 
 ---
 
-## 7. Fuera de scope
+## 9. Fuera de scope
 
 - Integración con IA para generar bloques (el context queda listo, la IA se conecta en iteración futura)
 - Animaciones de entrada al añadir bloques
