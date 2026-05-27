@@ -1,4 +1,6 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
+import { PromptBar } from '#/components/PromptBar'
 import appCss from '../styles.css?url'
 
 function NotFound() {
@@ -19,10 +21,19 @@ export const Route = createRootRoute({
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),
-  shellComponent: RootDocument,
+  component: RootComponent,
 })
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootComponent() {
+  return (
+    <RootDocument>
+      <Outlet />
+      <PromptBar />
+    </RootDocument>
+  )
+}
+
+function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
       <head>
