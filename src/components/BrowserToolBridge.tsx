@@ -76,12 +76,44 @@ export function BrowserToolBridge() {
       return { id }
     },
 
-    add_agent_block: (args: unknown) => {
+    add_agent_block: async (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
       const topic = readString(args.topic).trim()
       if (!topic) throw new Error('topic is required')
       const newId = createId()
-      addSection({ id: newId, content: '', topic })
+      addSection({ id: newId, content: '', topic, className: 'agent-block' })
+      // Wait for React to commit the new element to the DOM
+      await new Promise<void>(resolve => { requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) }) })
+      const element = document.getElementById(newId)
+      if (element) {
+        // Collapse to zero so the block emerges from below the previous section
+        element.style.height = '0px'
+        element.style.minHeight = '0px'
+        element.style.overflow = 'hidden'
+        // Scroll to page bottom where the new block will appear
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+        await new Promise(resolve => setTimeout(resolve, 380))
+        // Stretch downward from the previous block
+        const revealAnim = element.animate(
+          [{ height: '0px' }, { height: '280px' }],
+          { duration: 350, easing: 'cubic-bezier(0.2, 0, 0, 1)', fill: 'forwards' },
+        )
+        await revealAnim.finished
+        revealAnim.cancel()
+        element.style.removeProperty('height')
+        element.style.removeProperty('min-height')
+        element.style.removeProperty('overflow')
+        // Orange outline flash to signal the block is ready for content
+        element.animate(
+          [
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.9)', outlineOffset: '-10px' },
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+          ],
+          { duration: 300, easing: 'ease-out' },
+        )
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
       return { id: newId }
     },
 
@@ -93,6 +125,16 @@ export function BrowserToolBridge() {
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
       updateSection(id, { content: section.content + html })
+      // Flash the last child element to highlight newly added content (fire-and-forget)
+      setTimeout(() => {
+        const contentEl = document.getElementById(id)?.querySelector('.block-content')
+        if (contentEl?.lastElementChild) {
+          ;(contentEl.lastElementChild as HTMLElement).animate(
+            [{ backgroundColor: 'rgba(255,107,43,0.15)' }, { backgroundColor: 'transparent' }],
+            { duration: 350, easing: 'ease-out' },
+          )
+        }
+      }, 0)
       return { id }
     },
 
@@ -107,6 +149,17 @@ export function BrowserToolBridge() {
         updates.topic = args.topic.trim()
       }
       updateSection(id, updates)
+      // Flash the section outline to indicate content was replaced (fire-and-forget)
+      setTimeout(() => {
+        document.getElementById(id)?.animate(
+          [
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.7)', outlineOffset: '-8px' },
+            { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+          ],
+          { duration: 400, easing: 'ease-out' },
+        )
+      }, 0)
       return { id, updated: true }
     },
 

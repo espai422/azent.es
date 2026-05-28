@@ -181,6 +181,10 @@ body {
   margin-bottom: 1rem;
 }
 
+.agent-block {
+  min-height: 280px;
+}
+
 .block-content code {
   font-family: ui-monospace, monospace;
   font-size: 0.875em;

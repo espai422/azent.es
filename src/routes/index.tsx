@@ -132,8 +132,6 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
-    theme: 'closing',
-    className: 'flex flex-col items-end justify-end min-h-[30vh]',
     content: `<p>No buscamos clientes. Buscamos empresas que quieran operar diferente.</p>`,
   },
 ]
