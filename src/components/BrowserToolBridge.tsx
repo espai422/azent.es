@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSections, type SectionInput, type SectionTheme, type TabVariant } from '#/components/sections'
+import { useSections, type SectionInput } from '#/components/sections'
 import { createId } from '#/utils/id'
 
 type BrowserToolEvent =
@@ -12,8 +12,6 @@ type ToolResponse =
   | { ok: false; error: string }
 
 const SESSION_STORAGE_KEY = 'azent.browserSessionId'
-const SECTION_THEMES: SectionTheme[] = ['dark-1', 'light-2', 'dark-2', 'light-1', 'closing']
-const TAB_VARIANTS: TabVariant[] = ['center', 'right', 'left', 'none']
 
 function getSessionId() {
   const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY)
@@ -32,35 +30,8 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback
 }
 
-function readBoolean(value: unknown) {
-  return typeof value === 'boolean' ? value : undefined
-}
-
-function readTheme(value: unknown) {
-  return SECTION_THEMES.includes(value as SectionTheme) ? value as SectionTheme : undefined
-}
-
-function readTab(value: unknown) {
-  return TAB_VARIANTS.includes(value as TabVariant) ? value as TabVariant : undefined
-}
-
-function readSectionInput(value: unknown): SectionInput {
-  if (!isObject(value)) throw new Error('Expected section object')
-
-  const content = readString(value.content).trim()
-  if (!content) throw new Error('Section content is required')
-
-  return {
-    content,
-    theme: readTheme(value.theme),
-    tab: readTab(value.tab),
-    rule: readBoolean(value.rule),
-    className: readString(value.className) || undefined,
-  }
-}
-
 export function BrowserToolBridge() {
-  const { sections, addSection, updateSection, removeSection, moveSection, resetSections } = useSections()
+  const { sections, addSection, updateSection, removeSection } = useSections()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const sectionsRef = useRef(sections)
 
@@ -83,21 +54,18 @@ export function BrowserToolBridge() {
       return { title }
     },
 
-    scroll_to_section: (args: unknown) => {
+    focus_section: (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
-      const index = Number(args.index)
-      const section = document.querySelectorAll<HTMLElement>('.block-section')[index]
-      if (!section) throw new Error(`Section not found at index ${index}`)
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      return { index }
-    },
-
-    highlight_section: (args: unknown) => {
-      if (!isObject(args)) throw new Error('Expected args object')
-      const index = Number(args.index)
-      const section = document.querySelectorAll<HTMLElement>('.block-section')[index]
-      if (!section) throw new Error(`Section not found at index ${index}`)
-      section.animate(
+      const id = readString(args.id)
+      if (!id) throw new Error('id is required')
+      const element = document.getElementById(id)
+      if (!element) throw new Error(`Section not found: ${id}`)
+      const rect = element.getBoundingClientRect()
+      const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+      if (!isInView) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      element.animate(
         [
           { outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
           { outlineColor: 'rgba(255,107,43,0.9)', outlineOffset: '-10px' },
@@ -105,60 +73,50 @@ export function BrowserToolBridge() {
         ],
         { duration: 1_200, easing: 'ease-out' },
       )
-      return { index }
+      return { id }
     },
 
-    add_section: (args: unknown) => {
-      const input = readSectionInput(args)
-      addSection(input)
-      return { added: true }
+    add_agent_block: (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const topic = readString(args.topic).trim()
+      if (!topic) throw new Error('topic is required')
+      const newId = createId()
+      addSection({ id: newId, content: '', topic })
+      return { id: newId }
     },
 
-    set_section_html: (args: unknown) => {
+    append_to_block: (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
       const id = readString(args.id)
-      const content = readString(args.content).trim()
-      if (!id || !content) throw new Error('id and content are required')
-      updateSection(id, { content })
+      const html = readString(args.html).trim()
+      if (!id || !html) throw new Error('id and html are required')
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      updateSection(id, { content: section.content + html })
+      return { id }
+    },
+
+    set_block_html: (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const id = readString(args.id)
+      const html = readString(args.html).trim()
+      if (!id || !html) throw new Error('id and html are required')
+      const updates: Partial<SectionInput> = { content: html }
+      if (typeof args.topic === 'string' && args.topic.trim()) {
+        updates.topic = args.topic.trim()
+      }
+      updateSection(id, updates)
       return { id, updated: true }
     },
 
-    set_section_theme: (args: unknown) => {
-      if (!isObject(args)) throw new Error('Expected args object')
-      const id = readString(args.id)
-      const theme = readTheme(args.theme)
-      const tab = readTab(args.tab)
-      if (!id || !theme) throw new Error('id and valid theme are required')
-      updateSection(id, { theme, tab })
-      return { id, theme, tab }
-    },
-
-    move_section: (args: unknown) => {
-      if (!isObject(args)) throw new Error('Expected args object')
-      const id = readString(args.id)
-      const toIndex = Number(args.toIndex)
-      if (!id || !Number.isInteger(toIndex)) throw new Error('id and integer toIndex are required')
-      moveSection(id, toIndex)
-      return { id, toIndex }
-    },
-
-    remove_section: (args: unknown) => {
+    remove_block: (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
       const id = readString(args.id)
       if (!id) throw new Error('id is required')
       removeSection(id)
       return { id, removed: true }
     },
-
-    replace_all_sections: (args: unknown) => {
-      if (!isObject(args) || !Array.isArray(args.sections)) {
-        throw new Error('sections array is required')
-      }
-      const nextSections = args.sections.map(readSectionInput)
-      resetSections(nextSections)
-      return { count: nextSections.length }
-    },
-  }), [addSection, moveSection, removeSection, resetSections, updateSection])
+  }), [addSection, removeSection, updateSection])
 
   useEffect(() => {
     const nextSessionId = getSessionId()
