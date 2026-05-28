@@ -27,15 +27,67 @@ function walk(oldNode: Node | null, newNode: Node, doc: Document): void {
     return
   }
 
-  const newChildren = Array.from(newEl.childNodes)
-  const oldChildren = Array.from(oldEl.childNodes)
-  for (let i = 0; i < newChildren.length; i++) {
-    const match = oldChildren[i] && sameKind(oldChildren[i], newChildren[i]) ? oldChildren[i] : null
-    walk(match, newChildren[i], doc)
+  const pairs = matchChildren(Array.from(oldEl.childNodes), Array.from(newEl.childNodes))
+  for (const [newChild, oldMatch] of pairs) {
+    walk(oldMatch, newChild, doc)
   }
 }
 
-function sameKind(a: Node, b: Node): boolean {
+function matchChildren(oldArr: Node[], newArr: Node[]): Array<[Node, Node | null]> {
+  const m = oldArr.length, n = newArr.length
+  const oldSigs = oldArr.map(signature)
+  const newSigs = newArr.map(signature)
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = oldSigs[i - 1] === newSigs[j - 1]
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1])
+    }
+  }
+  const newToOld: Array<number | null> = new Array(n).fill(null)
+  const usedOld = new Set<number>()
+  let i = m, j = n
+  while (i > 0 && j > 0) {
+    if (oldSigs[i - 1] === newSigs[j - 1]) {
+      newToOld[j - 1] = i - 1
+      usedOld.add(i - 1)
+      i--; j--
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i--
+    } else {
+      j--
+    }
+  }
+
+  const unmatchedOld: number[] = []
+  for (let k = 0; k < m; k++) if (!usedOld.has(k)) unmatchedOld.push(k)
+  for (let k = 0; k < n; k++) {
+    if (newToOld[k] !== null) continue
+    for (let q = 0; q < unmatchedOld.length; q++) {
+      const oldIdx = unmatchedOld[q]
+      if (canPair(oldArr[oldIdx], newArr[k])) {
+        newToOld[k] = oldIdx
+        unmatchedOld.splice(q, 1)
+        break
+      }
+    }
+  }
+
+  return newArr.map((node, k) => [node, newToOld[k] !== null ? oldArr[newToOld[k] as number] : null])
+}
+
+function signature(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return 'T|' + (node.nodeValue ?? '').slice(0, 30)
+  }
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    return 'E|' + (node as Element).tagName + '|' + ((node.textContent ?? '').slice(0, 30))
+  }
+  return 'O|'
+}
+
+function canPair(a: Node, b: Node): boolean {
   if (a.nodeType !== b.nodeType) return false
   if (a.nodeType === Node.ELEMENT_NODE) {
     return (a as Element).tagName === (b as Element).tagName

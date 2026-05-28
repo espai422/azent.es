@@ -26,4 +26,9 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>A</p>', '<p>A</p><p>B</p>')
     expect(result).toBe('<p>A</p><p><span data-flash="">B</span></p>')
   })
+
+  it('wraps only the inserted element when one is inserted in the middle', () => {
+    const result = diffHtml('<p>A</p><p>B</p>', '<p>A</p><div>X</div><p>B</p>')
+    expect(result).toBe('<p>A</p><div><span data-flash="">X</span></div><p>B</p>')
+  })
 })
