@@ -5,8 +5,22 @@ export function diffHtml(oldHtml: string, newHtml: string): string {
   const oldRoot = oldDoc.body.firstChild as HTMLElement | null
   const newRoot = newDoc.body.firstChild as HTMLElement | null
   if (!newRoot) return newHtml
+  if (oldRoot) {
+    unwrapFlashSpans(oldRoot)
+    oldRoot.normalize()
+  }
   walk(oldRoot, newRoot, newDoc)
   return newRoot.innerHTML
+}
+
+function unwrapFlashSpans(root: Element): void {
+  const spans = root.querySelectorAll('span[data-flash]')
+  spans.forEach(span => {
+    const parent = span.parentNode
+    if (!parent) return
+    while (span.firstChild) parent.insertBefore(span.firstChild, span)
+    parent.removeChild(span)
+  })
 }
 
 function walk(oldNode: Node | null, newNode: Node, doc: Document): void {

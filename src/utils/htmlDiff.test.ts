@@ -58,4 +58,12 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>A</p>', '<h2>A</h2>')
     expect(result).toBe('<h2><span data-flash="">A</span></h2>')
   })
+
+  it('strips stale flash markers from old content before diffing', () => {
+    const result = diffHtml(
+      '<p><span data-flash="">x</span></p>',
+      '<p>x y</p>',
+    )
+    expect(result).toBe('<p>x <span data-flash="">y</span></p>')
+  })
 })
