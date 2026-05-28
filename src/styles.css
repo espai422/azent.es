@@ -171,6 +171,16 @@ body {
   margin-bottom: 1rem;
 }
 
+.block-topic {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--prose-accent);
+  margin-bottom: 1rem;
+}
+
 .block-content code {
   font-family: ui-monospace, monospace;
   font-size: 0.875em;
