@@ -12,6 +12,7 @@ export interface SectionConfig {
   content: string
   topic?: string
   className?: string
+  pinned?: boolean
 }
 
 export type SectionInput = {
@@ -22,6 +23,7 @@ export type SectionInput = {
   content: string
   topic?: string
   className?: string
+  pinned?: boolean
 }
 
 const COLOR_CYCLE: SectionTheme[] = ['dark-1', 'light-2', 'dark-2', 'light-1']
@@ -38,6 +40,7 @@ export function resolveSection(input: SectionInput, nonClosingCount: number): Se
     content: input.content,
     topic: input.topic,
     className: input.className,
+    pinned: input.pinned,
   }
 }
 
@@ -61,7 +64,17 @@ export function sectionsReducer(state: SectionsState, action: SectionsAction): S
   switch (action.type) {
     case 'ADD': {
       const count = countNonClosing(state.sections)
-      return { sections: [...state.sections, resolveSection(action.payload, count)] }
+      const next = resolveSection(action.payload, count)
+      if (next.pinned) {
+        return { sections: [...state.sections, next] }
+      }
+      const pinIdx = state.sections.findIndex(s => s.pinned)
+      if (pinIdx === -1) {
+        return { sections: [...state.sections, next] }
+      }
+      const sections = [...state.sections]
+      sections.splice(pinIdx, 0, next)
+      return { sections }
     }
     case 'UPDATE':
       return {

@@ -111,6 +111,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
   {
     id: 'cierre-pregunta',
     theme: 'closing',
+    pinned: true,
     content: `
       <p>La pregunta no es si tu empresa puede mejorar con IA. Es cuánto estás dejando
       sobre la mesa cada día que no lo hace.</p>
@@ -140,6 +141,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'cierre-final',
+    pinned: true,
     content: `<p>No buscamos clientes. Buscamos empresas que quieran operar diferente.</p>`,
   },
 ]

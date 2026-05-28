@@ -81,20 +81,30 @@ export function BrowserToolBridge() {
       if (!isObject(args)) throw new Error('Expected args object')
       const topic = readString(args.topic).trim()
       if (!topic) throw new Error('topic is required')
+
+      // Focus the pinned tail section first so the insertion lands in the middle of the viewport.
+      const pinnedSection = sectionsRef.current.find(s => s.pinned)
+      if (pinnedSection) {
+        const pinnedEl = document.getElementById(pinnedSection.id)
+        if (pinnedEl) {
+          pinnedEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          await new Promise(resolve => setTimeout(resolve, 380))
+        }
+      } else {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+        await new Promise(resolve => setTimeout(resolve, 380))
+      }
+
       const newId = createId()
       addSection({ id: newId, content: '', topic, className: 'agent-block' })
       // Wait for React to commit the new element to the DOM
       await new Promise<void>(resolve => { requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) }) })
       const element = document.getElementById(newId)
       if (element) {
-        // Collapse to zero so the block emerges from below the previous section
+        // Collapse to zero so the block emerges from between the previous section and the pinned tail
         element.style.height = '0px'
         element.style.minHeight = '0px'
         element.style.overflow = 'hidden'
-        // Scroll to page bottom where the new block will appear
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
-        await new Promise(resolve => setTimeout(resolve, 380))
-        // Stretch downward from the previous block
         const revealAnim = element.animate(
           [{ height: '0px' }, { height: '280px' }],
           { duration: 350, easing: 'cubic-bezier(0.2, 0, 0, 1)', fill: 'forwards' },

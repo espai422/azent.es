@@ -139,4 +139,32 @@ describe('sectionsReducer', () => {
     state = sectionsReducer(state, { type: 'UPDATE', id, payload: { topic: 'New topic' } })
     expect(state.sections[0].topic).toBe('New topic')
   })
+
+  it('ADD inserts before the pinned section when one exists', () => {
+    let state = sectionsReducer(empty, { type: 'ADD', payload: { id: 'a', content: 'a' } })
+    state = sectionsReducer(state, { type: 'ADD', payload: { id: 'tail', content: 'tail', pinned: true } })
+    state = sectionsReducer(state, { type: 'ADD', payload: { id: 'b', content: 'b' } })
+    expect(state.sections.map(s => s.id)).toEqual(['a', 'b', 'tail'])
+  })
+
+  it('ADD appends when the new section is itself pinned', () => {
+    let state = sectionsReducer(empty, { type: 'ADD', payload: { id: 'a', content: 'a' } })
+    state = sectionsReducer(state, { type: 'ADD', payload: { id: 'tail', content: 'tail', pinned: true } })
+    expect(state.sections.map(s => s.id)).toEqual(['a', 'tail'])
+  })
+
+  it('ADD appends normally when no pinned section exists', () => {
+    let state = sectionsReducer(empty, { type: 'ADD', payload: { id: 'a', content: 'a' } })
+    state = sectionsReducer(state, { type: 'ADD', payload: { id: 'b', content: 'b' } })
+    expect(state.sections.map(s => s.id)).toEqual(['a', 'b'])
+  })
+
+  it('RESET preserves pinned flag on sections', () => {
+    const state = sectionsReducer(empty, {
+      type: 'RESET',
+      payload: [{ content: 'one' }, { content: 'tail', pinned: true }],
+    })
+    expect(state.sections[0].pinned).toBeUndefined()
+    expect(state.sections[1].pinned).toBe(true)
+  })
 })
