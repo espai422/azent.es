@@ -1,7 +1,4 @@
 import { createServerFn } from '@tanstack/react-start'
-import { Codex } from '@openai/codex-sdk'
-
-const codex = new Codex()
 
 export const sendMessage = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) => {
@@ -9,8 +6,6 @@ export const sendMessage = createServerFn({ method: 'POST' })
     if (!message?.trim()) throw new Error('Message is required')
     return { message }
   })
-  .handler(async ({ data }) => {
-    const thread = codex.startThread({ skipGitRepoCheck: true })
-    const result = await thread.run(data.message)
-    return { reply: result.finalResponse }
+  .handler(async () => {
+    throw new Error('Legacy chat is disabled. Use the browser-controlled chat entrypoint.')
   })
