@@ -21,4 +21,9 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>foo bar baz</p>', '<p>foo new words baz</p>')
     expect(result).toBe('<p>foo <span data-flash="">new words</span> baz</p>')
   })
+
+  it('wraps only the appended paragraph when one is added at the end', () => {
+    const result = diffHtml('<p>A</p>', '<p>A</p><p>B</p>')
+    expect(result).toBe('<p>A</p><p><span data-flash="">B</span></p>')
+  })
 })
