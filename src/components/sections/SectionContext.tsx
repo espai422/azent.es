@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from 'react'
 import { createId } from '#/utils/id'
 
 export type SectionTheme = 'dark-1' | 'light-2' | 'dark-2' | 'light-1' | 'closing'
@@ -123,15 +123,22 @@ export function SectionProvider({
 }) {
   const [state, dispatch] = useReducer(sectionsReducer, initialSections, buildInitialState)
 
-  const value: SectionsContextValue = {
+  const addSection = useCallback((input: SectionInput) => dispatch({ type: 'ADD', payload: input }), [])
+  const updateSection = useCallback((id: string, input: Partial<SectionInput>) => dispatch({ type: 'UPDATE', id, payload: input }), [])
+  const removeSection = useCallback((id: string) => dispatch({ type: 'REMOVE', id }), [])
+  const moveSection = useCallback((id: string, toIndex: number) => dispatch({ type: 'MOVE', id, toIndex }), [])
+  const clearSections = useCallback(() => dispatch({ type: 'CLEAR' }), [])
+  const resetSections = useCallback((inputs: SectionInput[]) => dispatch({ type: 'RESET', payload: inputs }), [])
+
+  const value = useMemo<SectionsContextValue>(() => ({
     sections: state.sections,
-    addSection: (input) => dispatch({ type: 'ADD', payload: input }),
-    updateSection: (id, input) => dispatch({ type: 'UPDATE', id, payload: input }),
-    removeSection: (id) => dispatch({ type: 'REMOVE', id }),
-    moveSection: (id, toIndex) => dispatch({ type: 'MOVE', id, toIndex }),
-    clearSections: () => dispatch({ type: 'CLEAR' }),
-    resetSections: (inputs) => dispatch({ type: 'RESET', payload: inputs }),
-  }
+    addSection,
+    updateSection,
+    removeSection,
+    moveSection,
+    clearSections,
+    resetSections,
+  }), [state.sections, addSection, updateSection, removeSection, moveSection, clearSections, resetSections])
 
   return <SectionsContext.Provider value={value}>{children}</SectionsContext.Provider>
 }

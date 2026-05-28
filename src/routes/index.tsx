@@ -32,6 +32,7 @@ function Landing() {
 
 const INITIAL_SECTIONS: SectionInput[] = [
   {
+    id: 'intro',
     theme: 'dark-1',
     tab: 'center',
     className: 'flex flex-col justify-end min-h-[70vh] md:min-h-[85vh]',
@@ -43,6 +44,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'antes-y-despues-ia',
     rule: true,
     content: `
       <h2>Hay un <span class="accent">antes y un después</span> de la IA. Pocas empresas han cruzado esa línea.</h2>
@@ -53,6 +55,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'partner-tecnico',
     content: `
       <small>Partner</small>
       <h2>Nos involucramos como si fuera nuestro negocio</h2>
@@ -64,6 +67,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'cuestionamos-sistema',
     content: `
       <h2>Cuestionamos el <span class="accent">sistema</span></h2>
       <p>La IA no mejora procesos rotos. Los reemplaza. Automatizar algo ineficiente solo
@@ -74,6 +78,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'software-e-ia',
     rule: true,
     content: `
       <small>El cómo</small>
@@ -93,6 +98,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'pragmaticos',
     content: `
       <h2>Pragmáticos <span class="accent">por encima</span> de todo</h2>
       <p>El mercado de la IA está lleno de promesas que no sobreviven al contacto
@@ -103,6 +109,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'cierre-pregunta',
     theme: 'closing',
     content: `
       <p>La pregunta no es si tu empresa puede mejorar con IA. Es cuánto estás dejando
@@ -132,6 +139,7 @@ const INITIAL_SECTIONS: SectionInput[] = [
     `,
   },
   {
+    id: 'cierre-final',
     content: `<p>No buscamos clientes. Buscamos empresas que quieran operar diferente.</p>`,
   },
 ]
