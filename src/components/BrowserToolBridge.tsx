@@ -67,9 +67,9 @@ export function BrowserToolBridge() {
       }
       element.animate(
         [
-          { outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
-          { outlineColor: 'rgba(255,107,43,0.9)', outlineOffset: '-10px' },
-          { outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+          { outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+          { outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.9)', outlineOffset: '-10px' },
+          { outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
         ],
         { duration: 1_200, easing: 'ease-out' },
       )
@@ -101,6 +101,7 @@ export function BrowserToolBridge() {
       const id = readString(args.id)
       const html = readString(args.html).trim()
       if (!id || !html) throw new Error('id and html are required')
+      if (!sectionsRef.current.find(s => s.id === id)) throw new Error(`Section not found: ${id}`)
       const updates: Partial<SectionInput> = { content: html }
       if (typeof args.topic === 'string' && args.topic.trim()) {
         updates.topic = args.topic.trim()
@@ -113,6 +114,7 @@ export function BrowserToolBridge() {
       if (!isObject(args)) throw new Error('Expected args object')
       const id = readString(args.id)
       if (!id) throw new Error('id is required')
+      if (!sectionsRef.current.find(s => s.id === id)) throw new Error(`Section not found: ${id}`)
       removeSection(id)
       return { id, removed: true }
     },
