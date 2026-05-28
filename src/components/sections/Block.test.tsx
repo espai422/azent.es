@@ -61,4 +61,19 @@ describe('Block', () => {
     )
     expect(container.querySelector('.custom-class')).toBeTruthy()
   })
+
+  it('sets id attribute from config.id', () => {
+    const { container } = render(<Block config={base} index={0} prevTab="none" />)
+    expect(container.querySelector('#test-id')).toBeTruthy()
+  })
+
+  it('renders topic as <small> when present', () => {
+    render(<Block config={{ ...base, topic: 'Sobre precios' }} index={0} prevTab="none" />)
+    expect(screen.getByText('Sobre precios', { selector: 'small' })).toBeTruthy()
+  })
+
+  it('does not render <small> when topic is absent', () => {
+    const { container } = render(<Block config={base} index={0} prevTab="none" />)
+    expect(container.querySelector('small')).toBeNull()
+  })
 })

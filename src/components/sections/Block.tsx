@@ -19,12 +19,14 @@ export function Block({ config, index, prevTab }: BlockProps) {
 
   return (
     <section
+      id={config.id}
       data-theme={config.theme}
       data-tab={config.tab}
       className={`block-section${config.className ? ` ${config.className}` : ''}`}
       style={{ clipPath, marginTop, position: 'relative', zIndex: 1000 - index * 10 }}
     >
       {config.rule && <div className="block-rule" aria-hidden="true" />}
+      {config.topic && <small>{config.topic}</small>}
       <div
         className="block-content"
         dangerouslySetInnerHTML={{ __html: config.content }}
