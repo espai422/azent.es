@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSections, type SectionInput } from '#/components/sections'
 import { createId } from '#/utils/id'
+import { diffHtml } from '#/utils/htmlDiff'
 
 type BrowserToolEvent =
   | { type: 'session.ready'; sessionId: string }
@@ -143,8 +144,10 @@ export function BrowserToolBridge() {
       const id = readString(args.id)
       const html = readString(args.html).trim()
       if (!id || !html) throw new Error('id and html are required')
-      if (!sectionsRef.current.find(s => s.id === id)) throw new Error(`Section not found: ${id}`)
-      const updates: Partial<SectionInput> = { content: html }
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      const annotated = diffHtml(section.content, html)
+      const updates: Partial<SectionInput> = { content: annotated }
       if (typeof args.topic === 'string' && args.topic.trim()) {
         updates.topic = args.topic.trim()
       }
