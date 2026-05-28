@@ -16,4 +16,9 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>hello world</p>', '<p>hello there</p>')
     expect(result).toBe('<p>hello <span data-flash="">there</span></p>')
   })
+
+  it('groups contiguous new word tokens into one span', () => {
+    const result = diffHtml('<p>foo bar baz</p>', '<p>foo new words baz</p>')
+    expect(result).toBe('<p>foo <span data-flash="">new words</span> baz</p>')
+  })
 })
