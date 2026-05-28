@@ -4,9 +4,6 @@ import { z } from 'zod/v4'
 import { invokeBrowserTool } from './browserTools'
 
 const sessionId = z.string().min(1).describe('Ephemeral browser session id for the current tab.')
-const html = z.string().min(1).describe('Trusted HTML rendered inside the section.')
-const theme = z.enum(['dark-1', 'light-2', 'dark-2', 'light-1', 'closing'])
-const tab = z.enum(['center', 'right', 'left', 'none'])
 
 type ToolArgs = Record<string, unknown>
 
@@ -26,13 +23,13 @@ async function invoke(toolName: string, session: string, args: ToolArgs = {}) {
 function createBrowserMcpServer() {
   const server = new McpServer({
     name: 'azent-browser-tools',
-    version: '0.1.0',
+    version: '0.2.0',
   })
 
   server.registerTool(
     'get_page_snapshot',
     {
-      description: 'Read the current page title, URL and editable section ids/content.',
+      description: 'Read the current page title, URL and all section ids, topics and HTML content. Always call this first before making any changes.',
       inputSchema: { sessionId },
     },
     ({ sessionId }) => invoke('get_page_snapshot', sessionId),
@@ -48,91 +45,60 @@ function createBrowserMcpServer() {
   )
 
   server.registerTool(
-    'scroll_to_section',
+    'focus_section',
     {
-      description: 'Smooth-scroll the browser to a section index.',
-      inputSchema: { sessionId, index: z.number().int().min(0) },
+      description: 'Scroll to a section if not in view, then flash an orange border highlight. Use when the visitor asks about something that maps to an existing section.',
+      inputSchema: { sessionId, id: z.string().min(1).describe('Section id from get_page_snapshot.') },
     },
-    ({ sessionId, index }) => invoke('scroll_to_section', sessionId, { index }),
+    ({ sessionId, id }) => invoke('focus_section', sessionId, { id }),
   )
 
   server.registerTool(
-    'highlight_section',
+    'add_agent_block',
     {
-      description: 'Briefly highlight a section index in the browser.',
-      inputSchema: { sessionId, index: z.number().int().min(0) },
-    },
-    ({ sessionId, index }) => invoke('highlight_section', sessionId, { index }),
-  )
-
-  server.registerTool(
-    'add_section',
-    {
-      description: 'Append a new landing-page section.',
+      description: 'Append a new empty block at the end of the page. The topic appears as a <small> label above the content, contextualising what the block responds to. Returns the block id — save it for append_to_block calls.',
       inputSchema: {
         sessionId,
-        content: html,
-        theme: theme.optional(),
-        tab: tab.optional(),
-        rule: z.boolean().optional(),
-        className: z.string().optional(),
+        topic: z.string().min(1).describe('Short label shown as <small>. Explains what this block is responding to, e.g. "Sobre automatización de procesos".'),
       },
     },
-    ({ sessionId, ...section }) => invoke('add_section', sessionId, section),
+    ({ sessionId, topic }) => invoke('add_agent_block', sessionId, { topic }),
   )
 
   server.registerTool(
-    'set_section_html',
+    'append_to_block',
     {
-      description: 'Replace the HTML content of an existing section by id.',
-      inputSchema: { sessionId, id: z.string().min(1), content: html },
+      description: 'Append an HTML fragment to a block\'s content. Call multiple times with small chunks — one heading, one paragraph at a time — to create an incremental writing effect visible to the visitor in real time.',
+      inputSchema: {
+        sessionId,
+        id: z.string().min(1).describe('Block id returned by add_agent_block.'),
+        html: z.string().min(1).describe('HTML fragment to append. Use Tailwind utility classes. Keep mobile-first responsive design in mind.'),
+      },
     },
-    ({ sessionId, id, content }) => invoke('set_section_html', sessionId, { id, content }),
+    ({ sessionId, id, html }) => invoke('append_to_block', sessionId, { id, html }),
   )
 
   server.registerTool(
-    'set_section_theme',
+    'set_block_html',
     {
-      description: 'Change a section theme and optionally its tab shape.',
-      inputSchema: { sessionId, id: z.string().min(1), theme, tab: tab.optional() },
+      description: 'Replace the full HTML content of a block. Use for editing a previous response or refactoring. Optionally update the topic label.',
+      inputSchema: {
+        sessionId,
+        id: z.string().min(1),
+        html: z.string().min(1).describe('Complete new HTML for the block. Use Tailwind utility classes.'),
+        topic: z.string().min(1).optional().describe('New topic label. Omit to keep the existing topic.'),
+      },
     },
-    ({ sessionId, id, theme, tab }) => invoke('set_section_theme', sessionId, { id, theme, tab }),
+    ({ sessionId, id, html, topic }) => invoke('set_block_html', sessionId, { id, html, ...(topic ? { topic } : {}) }),
   )
 
   server.registerTool(
-    'move_section',
+    'remove_block',
     {
-      description: 'Move an existing section to another zero-based index.',
-      inputSchema: { sessionId, id: z.string().min(1), toIndex: z.number().int().min(0) },
-    },
-    ({ sessionId, id, toIndex }) => invoke('move_section', sessionId, { id, toIndex }),
-  )
-
-  server.registerTool(
-    'remove_section',
-    {
-      description: 'Remove an existing section by id.',
+      description: 'Remove a block by id.',
       inputSchema: { sessionId, id: z.string().min(1) },
     },
-    ({ sessionId, id }) => invoke('remove_section', sessionId, { id }),
-  )
-
-  server.registerTool(
-    'replace_all_sections',
-    {
-      description: 'Replace all landing-page sections in one operation.',
-      inputSchema: {
-        sessionId,
-        sections: z.array(z.object({
-          content: html,
-          theme: theme.optional(),
-          tab: tab.optional(),
-          rule: z.boolean().optional(),
-          className: z.string().optional(),
-        })).min(1),
-      },
-    },
-    ({ sessionId, sections }) => invoke('replace_all_sections', sessionId, { sections }),
+    ({ sessionId, id }) => invoke('remove_block', sessionId, { id }),
   )
 
   return server
