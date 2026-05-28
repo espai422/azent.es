@@ -45,7 +45,7 @@ describe('resolveSection — tab cycle', () => {
 })
 
 describe('resolveSection — id + content', () => {
-  it('generates a non-empty id', () => {
+  it('generates a new id when id is not provided', () => {
     expect(resolveSection({ content: '' }, 0).id).toBeTruthy()
   })
   it('generates unique ids', () => {
@@ -70,9 +70,6 @@ describe('resolveSection — id + content', () => {
   })
   it('uses pre-generated id when provided', () => {
     expect(resolveSection({ content: '', id: 'pre-set' }, 0).id).toBe('pre-set')
-  })
-  it('generates a new id when id is not provided', () => {
-    expect(resolveSection({ content: '' }, 0).id).toBeTruthy()
   })
 })
 
