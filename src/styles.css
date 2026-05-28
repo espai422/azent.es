@@ -249,3 +249,15 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ─── Diff flash for new/modified content ────────────────────────────────── */
+
+@keyframes diff-flash {
+  0%   { background-color: rgba(255, 107, 43, 0.45); }
+  100% { background-color: transparent; }
+}
+
+.block-content [data-flash] {
+  animation: diff-flash 1s ease-out forwards;
+  border-radius: 2px;
+}
+
