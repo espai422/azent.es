@@ -222,7 +222,9 @@ function handleStreamEvent(
       break
     case 'turn.started':
       setActivities((prev) => [
-        ...prev,
+        ...prev.map((activity) =>
+          activity.id === 'turn' ? { ...activity, state: 'done' as const } : activity,
+        ),
         { id: `turn-started-${Date.now()}`, label: 'Codex pensando', state: 'active' },
       ])
       break

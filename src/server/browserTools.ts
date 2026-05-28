@@ -38,8 +38,12 @@ function writeSse(controller: ReadableStreamDefaultController<Uint8Array>, event
 }
 
 export function createBrowserSessionStream(sessionId: string): ReadableStream<Uint8Array> {
+  let streamController: ReadableStreamDefaultController<Uint8Array> | null = null
+
   return new ReadableStream<Uint8Array>({
     start(controller) {
+      streamController = controller
+
       const existing = sessions.get(sessionId)
       existing?.close()
 
@@ -61,7 +65,12 @@ export function createBrowserSessionStream(sessionId: string): ReadableStream<Ui
       writeSse(controller, { type: 'session.ready', sessionId })
     },
     cancel() {
-      sessions.delete(sessionId)
+      // Only delete the session if it still belongs to this stream instance.
+      // If the browser reconnected before this cancel fires, a newer session
+      // is already in the map — deleting it would break the new connection.
+      if (streamController && sessions.get(sessionId)?.controller === streamController) {
+        sessions.delete(sessionId)
+      }
     },
   })
 }
