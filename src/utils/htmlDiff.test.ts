@@ -36,4 +36,13 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>A</p><p>B</p>', '<p>B</p><p>C</p>')
     expect(result).toBe('<p>B</p><p><span data-flash="">C</span></p>')
   })
+
+  it('wraps every text node inside a wholly new nested subtree', () => {
+    const oldHtml = '<p>A</p>'
+    const newHtml = '<p>A</p><div class="block-cards"><div class="block-card"><h2>Title</h2><p>Body</p></div></div>'
+    const result = diffHtml(oldHtml, newHtml)
+    expect(result).toBe(
+      '<p>A</p><div class="block-cards"><div class="block-card"><h2><span data-flash="">Title</span></h2><p><span data-flash="">Body</span></p></div></div>'
+    )
+  })
 })
