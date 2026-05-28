@@ -31,4 +31,9 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>A</p><p>B</p>', '<p>A</p><div>X</div><p>B</p>')
     expect(result).toBe('<p>A</p><div><span data-flash="">X</span></div><p>B</p>')
   })
+
+  it('wraps only the truly new paragraph when content shifts (B,C from A,B)', () => {
+    const result = diffHtml('<p>A</p><p>B</p>', '<p>B</p><p>C</p>')
+    expect(result).toBe('<p>B</p><p><span data-flash="">C</span></p>')
+  })
 })
