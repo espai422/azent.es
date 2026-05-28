@@ -64,12 +64,13 @@ describe('Block', () => {
 
   it('sets id attribute from config.id', () => {
     const { container } = render(<Block config={base} index={0} prevTab="none" />)
-    expect(container.querySelector('#test-id')).toBeTruthy()
+    const section = container.querySelector('section')
+    expect(section?.id).toBe('test-id')
   })
 
   it('renders topic as <small> when present', () => {
     render(<Block config={{ ...base, topic: 'Sobre precios' }} index={0} prevTab="none" />)
-    expect(screen.getByText('Sobre precios', { selector: 'small' })).toBeTruthy()
+    screen.getByText('Sobre precios', { selector: 'small' })
   })
 
   it('does not render <small> when topic is absent', () => {

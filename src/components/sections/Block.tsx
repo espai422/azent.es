@@ -26,7 +26,7 @@ export function Block({ config, index, prevTab }: BlockProps) {
       style={{ clipPath, marginTop, position: 'relative', zIndex: 1000 - index * 10 }}
     >
       {config.rule && <div className="block-rule" aria-hidden="true" />}
-      {config.topic && <small>{config.topic}</small>}
+      {config.topic && <small className="block-topic">{config.topic}</small>}
       <div
         className="block-content"
         dangerouslySetInnerHTML={{ __html: config.content }}
