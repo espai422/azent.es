@@ -45,4 +45,17 @@ describe('diffHtml', () => {
       '<p>A</p><div class="block-cards"><div class="block-card"><h2><span data-flash="">Title</span></h2><p><span data-flash="">Body</span></p></div></div>'
     )
   })
+
+  it('wraps only the changed text deep inside nested elements', () => {
+    const result = diffHtml(
+      '<div><p>keep <strong>old</strong></p></div>',
+      '<div><p>keep <strong>new</strong></p></div>',
+    )
+    expect(result).toBe('<div><p>keep <strong><span data-flash="">new</span></strong></p></div>')
+  })
+
+  it('wraps text when the wrapping element tag changes', () => {
+    const result = diffHtml('<p>A</p>', '<h2>A</h2>')
+    expect(result).toBe('<h2><span data-flash="">A</span></h2>')
+  })
 })
