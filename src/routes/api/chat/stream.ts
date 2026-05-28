@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Codex, type ThreadEvent } from '@openai/codex-sdk'
+import type { ThreadEvent } from '@openai/codex-sdk'
+import { getThreadForBrowserSession, setBrowserSessionActiveTurn } from '#/server/codex'
 
 const encoder = new TextEncoder()
 
@@ -67,24 +68,6 @@ function mapCodexEvent(event: ThreadEvent): ClientStreamEvent | null {
   }
 }
 
-function createCodex(appOrigin: string) {
-  return new Codex({
-    config: {
-      mcp_servers: {
-        browser_tools: {
-          command: process.execPath,
-          args: ['scripts/browser-tools-mcp.mjs'],
-          default_tools_approval_mode: 'approve',
-          env: {
-            AZENT_APP_ORIGIN: appOrigin,
-            BROWSER_TOOLS_INTERNAL_TOKEN: process.env.BROWSER_TOOLS_INTERNAL_TOKEN || '',
-          },
-        },
-      },
-    },
-  })
-}
-
 export const Route = createFileRoute('/api/chat/stream')({
   server: {
     handlers: {
@@ -106,12 +89,14 @@ export const Route = createFileRoute('/api/chat/stream')({
           process.env.AZENT_APP_ORIGIN ||
           `${new URL(request.url).protocol}//${request.headers.get('host')}`
 
-        const thread = createCodex(appOrigin).startThread({
-          skipGitRepoCheck: true,
-          workingDirectory: process.cwd(),
-          approvalPolicy: 'never',
-          sandboxMode: 'workspace-write',
-        })
+        const sessionThread = getThreadForBrowserSession(browserSessionId, appOrigin)
+
+        if (sessionThread.activeTurn) {
+          return Response.json(
+            { error: 'This browser session already has an active Codex turn' },
+            { status: 409 },
+          )
+        }
 
         const prompt = [
           `Browser session id: ${browserSessionId}`,
@@ -128,27 +113,33 @@ export const Route = createFileRoute('/api/chat/stream')({
           async start(controller) {
             let finalResponse = ''
 
-            try {
-              const { events } = await thread.runStreamed(prompt)
+            const activeTurn = (async () => {
+              try {
+                const { events } = await sessionThread.thread.runStreamed(prompt)
 
-              for await (const event of events) {
-                if (event.type === 'item.completed' && event.item.type === 'agent_message') {
-                  finalResponse = event.item.text
+                for await (const event of events) {
+                  if (event.type === 'item.completed' && event.item.type === 'agent_message') {
+                    finalResponse = event.item.text
+                  }
+
+                  const mapped = mapCodexEvent(event)
+                  if (mapped) controller.enqueue(encodeEvent(mapped))
                 }
 
-                const mapped = mapCodexEvent(event)
-                if (mapped) controller.enqueue(encodeEvent(mapped))
+                controller.enqueue(encodeEvent({ type: 'turn.completed', finalResponse }))
+                controller.close()
+              } catch (error) {
+                controller.enqueue(encodeEvent({
+                  type: 'error',
+                  message: error instanceof Error ? error.message : 'Codex stream failed',
+                }))
+                controller.close()
+              } finally {
+                setBrowserSessionActiveTurn(browserSessionId, null)
               }
+            })()
 
-              controller.enqueue(encodeEvent({ type: 'turn.completed', finalResponse }))
-              controller.close()
-            } catch (error) {
-              controller.enqueue(encodeEvent({
-                type: 'error',
-                message: error instanceof Error ? error.message : 'Codex stream failed',
-              }))
-              controller.close()
-            }
+            setBrowserSessionActiveTurn(browserSessionId, activeTurn)
           },
         })
 

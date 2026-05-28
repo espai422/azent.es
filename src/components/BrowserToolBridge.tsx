@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSections, type SectionInput, type SectionTheme, type TabVariant } from '#/components/sections'
+import { createId } from '#/utils/id'
 
 type BrowserToolEvent =
   | { type: 'session.ready'; sessionId: string }
@@ -18,7 +19,7 @@ function getSessionId() {
   const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY)
   if (existing) return existing
 
-  const next = window.crypto.randomUUID()
+  const next = createId()
   window.sessionStorage.setItem(SESSION_STORAGE_KEY, next)
   return next
 }

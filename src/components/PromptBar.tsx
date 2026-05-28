@@ -273,12 +273,23 @@ function handleStreamEvent(
       ])
       break
     case 'turn.completed':
-      setActivities((prev) => [
-        ...prev.map((activity) =>
+      setActivities((prev) => {
+        const finalResponse = event.finalResponse.trim()
+        const alreadyShown = finalResponse
+          ? prev.some((activity) => activity.label === finalResponse)
+          : true
+
+        const completedActivities = prev.map((activity) =>
           activity.state === 'active' ? { ...activity, state: 'done' as const } : activity,
-        ),
-        { id: `complete-${Date.now()}`, label: event.finalResponse || 'Turno completado', state: 'done' },
-      ])
+        )
+
+        if (alreadyShown) return completedActivities
+
+        return [
+          ...completedActivities,
+          { id: `complete-${Date.now()}`, label: finalResponse, state: 'done' },
+        ]
+      })
       break
   }
 }

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiMcpBrowserToolsRouteImport } from './routes/api/mcp/browser-tools'
 import { Route as ApiChatStreamRouteImport } from './routes/api/chat/stream'
 import { Route as ApiBrowserToolsResultRouteImport } from './routes/api/browser-tools/result'
 import { Route as ApiBrowserToolsInvokeRouteImport } from './routes/api/browser-tools/invoke'
@@ -24,6 +25,11 @@ const ChatRoute = ChatRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpBrowserToolsRoute = ApiMcpBrowserToolsRouteImport.update({
+  id: '/api/mcp/browser-tools',
+  path: '/api/mcp/browser-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatStreamRoute = ApiChatStreamRouteImport.update({
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
+  '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
+  '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
+  '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
     | '/api/chat/stream'
+    | '/api/mcp/browser-tools'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
     | '/api/chat/stream'
+    | '/api/mcp/browser-tools'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
     | '/api/chat/stream'
+    | '/api/mcp/browser-tools'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   ApiBrowserToolsInvokeRoute: typeof ApiBrowserToolsInvokeRoute
   ApiBrowserToolsResultRoute: typeof ApiBrowserToolsResultRoute
   ApiChatStreamRoute: typeof ApiChatStreamRoute
+  ApiMcpBrowserToolsRoute: typeof ApiMcpBrowserToolsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp/browser-tools': {
+      id: '/api/mcp/browser-tools'
+      path: '/api/mcp/browser-tools'
+      fullPath: '/api/mcp/browser-tools'
+      preLoaderRoute: typeof ApiMcpBrowserToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat/stream': {
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBrowserToolsInvokeRoute: ApiBrowserToolsInvokeRoute,
   ApiBrowserToolsResultRoute: ApiBrowserToolsResultRoute,
   ApiChatStreamRoute: ApiChatStreamRoute,
+  ApiMcpBrowserToolsRoute: ApiMcpBrowserToolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

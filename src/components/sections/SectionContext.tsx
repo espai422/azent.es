@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, type ReactNode } from 'react'
+import { createId } from '#/utils/id'
 
 export type SectionTheme = 'dark-1' | 'light-2' | 'dark-2' | 'light-1' | 'closing'
 export type TabVariant = 'center' | 'right' | 'left' | 'none'
@@ -27,7 +28,7 @@ export function resolveSection(input: SectionInput, nonClosingCount: number): Se
   const theme = input.theme ?? COLOR_CYCLE[nonClosingCount % 4]
   const tab = theme === 'closing' ? 'none' : (input.tab ?? TAB_CYCLE[nonClosingCount % 3])
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     theme,
     tab,
     rule: input.rule,
