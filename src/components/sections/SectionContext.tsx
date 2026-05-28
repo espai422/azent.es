@@ -10,14 +10,17 @@ export interface SectionConfig {
   tab: TabVariant
   rule?: boolean
   content: string
+  topic?: string
   className?: string
 }
 
 export type SectionInput = {
+  id?: string
   theme?: SectionTheme
   tab?: TabVariant
   rule?: boolean
   content: string
+  topic?: string
   className?: string
 }
 
@@ -28,11 +31,12 @@ export function resolveSection(input: SectionInput, nonClosingCount: number): Se
   const theme = input.theme ?? COLOR_CYCLE[nonClosingCount % 4]
   const tab = theme === 'closing' ? 'none' : (input.tab ?? TAB_CYCLE[nonClosingCount % 3])
   return {
-    id: createId(),
+    id: input.id ?? createId(),
     theme,
     tab,
     rule: input.rule,
     content: input.content,
+    topic: input.topic,
     className: input.className,
   }
 }

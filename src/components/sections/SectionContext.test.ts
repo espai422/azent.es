@@ -62,6 +62,18 @@ describe('resolveSection — id + content', () => {
   it('preserves className', () => {
     expect(resolveSection({ content: '', className: 'foo' }, 0).className).toBe('foo')
   })
+  it('preserves topic', () => {
+    expect(resolveSection({ content: '', topic: 'Sobre IA' }, 0).topic).toBe('Sobre IA')
+  })
+  it('topic is undefined when not provided', () => {
+    expect(resolveSection({ content: '' }, 0).topic).toBeUndefined()
+  })
+  it('uses pre-generated id when provided', () => {
+    expect(resolveSection({ content: '', id: 'pre-set' }, 0).id).toBe('pre-set')
+  })
+  it('generates a new id when id is not provided', () => {
+    expect(resolveSection({ content: '' }, 0).id).toBeTruthy()
+  })
 })
 
 describe('sectionsReducer', () => {
@@ -117,5 +129,17 @@ describe('sectionsReducer', () => {
     expect(state.sections[1].content).toBe('new2')
     expect(state.sections[0].theme).toBe('dark-1')
     expect(state.sections[1].theme).toBe('light-2')
+  })
+
+  it('ADD preserves topic', () => {
+    const state = sectionsReducer(empty, { type: 'ADD', payload: { content: 'hi', topic: 'Test topic' } })
+    expect(state.sections[0].topic).toBe('Test topic')
+  })
+
+  it('UPDATE can patch topic', () => {
+    let state = sectionsReducer(empty, { type: 'ADD', payload: { content: 'a' } })
+    const { id } = state.sections[0]
+    state = sectionsReducer(state, { type: 'UPDATE', id, payload: { topic: 'New topic' } })
+    expect(state.sections[0].topic).toBe('New topic')
   })
 })
