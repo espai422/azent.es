@@ -42,7 +42,9 @@ interface SectionsState { sections: SectionConfig[] }
 
 export type SectionsAction =
   | { type: 'ADD'; payload: SectionInput }
+  | { type: 'UPDATE'; id: string; payload: Partial<SectionInput> }
   | { type: 'REMOVE'; id: string }
+  | { type: 'MOVE'; id: string; toIndex: number }
   | { type: 'CLEAR' }
   | { type: 'RESET'; payload: SectionInput[] }
 
@@ -56,8 +58,25 @@ export function sectionsReducer(state: SectionsState, action: SectionsAction): S
       const count = countNonClosing(state.sections)
       return { sections: [...state.sections, resolveSection(action.payload, count)] }
     }
+    case 'UPDATE':
+      return {
+        sections: state.sections.map((section) =>
+          section.id === action.id ? { ...section, ...action.payload } : section,
+        ),
+      }
     case 'REMOVE':
       return { sections: state.sections.filter(s => s.id !== action.id) }
+    case 'MOVE': {
+      const fromIndex = state.sections.findIndex((section) => section.id === action.id)
+      if (fromIndex === -1) return state
+
+      const sections = [...state.sections]
+      const [section] = sections.splice(fromIndex, 1)
+      const toIndex = Math.max(0, Math.min(action.toIndex, sections.length))
+      sections.splice(toIndex, 0, section)
+
+      return { sections }
+    }
     case 'CLEAR':
       return { sections: [] }
     case 'RESET': {
@@ -77,7 +96,9 @@ export function sectionsReducer(state: SectionsState, action: SectionsAction): S
 export interface SectionsContextValue {
   sections: SectionConfig[]
   addSection: (input: SectionInput) => void
+  updateSection: (id: string, input: Partial<SectionInput>) => void
   removeSection: (id: string) => void
+  moveSection: (id: string, toIndex: number) => void
   clearSections: () => void
   resetSections: (inputs: SectionInput[]) => void
 }
@@ -100,7 +121,9 @@ export function SectionProvider({
   const value: SectionsContextValue = {
     sections: state.sections,
     addSection: (input) => dispatch({ type: 'ADD', payload: input }),
+    updateSection: (id, input) => dispatch({ type: 'UPDATE', id, payload: input }),
     removeSection: (id) => dispatch({ type: 'REMOVE', id }),
+    moveSection: (id, toIndex) => dispatch({ type: 'MOVE', id, toIndex }),
     clearSections: () => dispatch({ type: 'CLEAR' }),
     resetSections: (inputs) => dispatch({ type: 'RESET', payload: inputs }),
   }

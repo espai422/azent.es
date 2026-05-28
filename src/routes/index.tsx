@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { BrowserToolBridge } from '#/components/BrowserToolBridge'
 import { SectionProvider, useSections, Block } from '#/components/sections'
 import type { SectionInput } from '#/components/sections'
 
@@ -7,6 +8,7 @@ export const Route = createFileRoute('/')({ component: LandingPage })
 function LandingPage() {
   return (
     <SectionProvider initialSections={INITIAL_SECTIONS}>
+      <BrowserToolBridge />
       <Landing />
     </SectionProvider>
   )
