@@ -11,4 +11,9 @@ describe('diffHtml', () => {
     const result = diffHtml('<p>same</p>', '<p>same</p>')
     expect(result).toBe('<p>same</p>')
   })
+
+  it('wraps only changed words within a matched text node', () => {
+    const result = diffHtml('<p>hello world</p>', '<p>hello there</p>')
+    expect(result).toBe('<p>hello <span data-flash="">there</span></p>')
+  })
 })
