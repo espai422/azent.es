@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSections, type SectionInput } from '#/components/sections'
+import type { DiagramJSON } from '#/components/sections'
 import { createId } from '#/utils/id'
 import { diffHtml, stripFlashSpans, wrapAllTextAsFlash } from '#/utils/htmlDiff'
 
@@ -29,6 +30,80 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback
+}
+
+function readDiagram(value: unknown): DiagramJSON {
+  if (!isObject(value)) throw new Error('diagram must be an object')
+  const nodes = Array.isArray(value.nodes) ? value.nodes : null
+  const edges = Array.isArray(value.edges) ? value.edges : null
+  if (!nodes || !edges) throw new Error('diagram requires nodes[] and edges[]')
+
+  const nodeIds = new Set<string>()
+  const normalizedNodes = nodes.map((raw, i) => {
+    if (!isObject(raw)) throw new Error(`nodes[${i}] must be an object`)
+    const id = readString(raw.id).trim()
+    const label = readString(raw.label).trim()
+    const x = typeof raw.x === 'number' ? raw.x : NaN
+    const y = typeof raw.y === 'number' ? raw.y : NaN
+    if (!id) throw new Error(`nodes[${i}].id required`)
+    if (!label) throw new Error(`nodes[${i}].label required`)
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      throw new Error(`nodes[${i}] requires numeric x and y`)
+    }
+    if (nodeIds.has(id)) throw new Error(`duplicate node id: ${id}`)
+    nodeIds.add(id)
+    return { id, label, x, y }
+  })
+
+  const normalizedEdges = edges.map((raw, i) => {
+    if (!isObject(raw)) throw new Error(`edges[${i}] must be an object`)
+    const source = readString(raw.source).trim()
+    const target = readString(raw.target).trim()
+    if (!source || !target) throw new Error(`edges[${i}] requires source and target`)
+    if (!nodeIds.has(source)) throw new Error(`edges[${i}].source ${source} not in nodes`)
+    if (!nodeIds.has(target)) throw new Error(`edges[${i}].target ${target} not in nodes`)
+    const out: { id?: string; source: string; target: string; label?: string; highlight?: boolean } = {
+      source,
+      target,
+    }
+    if (typeof raw.id === 'string' && raw.id) out.id = raw.id
+    if (typeof raw.label === 'string') out.label = raw.label
+    if (raw.highlight === true) out.highlight = true
+    return out
+  })
+
+  return { nodes: normalizedNodes, edges: normalizedEdges }
+}
+
+function readVariables(value: unknown): Record<string, number> {
+  if (!isObject(value)) throw new Error('variables must be an object')
+  const out: Record<string, number> = {}
+  for (const [name, raw] of Object.entries(value)) {
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+      throw new Error(`variables.${name} must be a finite number`)
+    }
+    out[name] = raw
+  }
+  return out
+}
+
+function readDiagramPosition(value: unknown): 'before' | 'after' {
+  const v = readString(value)
+  if (v === 'before' || v === 'after') return v
+  throw new Error('diagramPosition must be "before" or "after"')
+}
+
+function flashBlockOutline(id: string) {
+  setTimeout(() => {
+    document.getElementById(id)?.animate(
+      [
+        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.7)', outlineOffset: '-8px' },
+        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+      ],
+      { duration: 400, easing: 'ease-out' },
+    )
+  }, 0)
 }
 
 export function BrowserToolBridge() {
@@ -97,7 +172,24 @@ export function BrowserToolBridge() {
       const topic = readString(args.topic).trim()
       if (!topic) throw new Error('topic is required')
 
-      // Focus the pinned tail section first so the insertion lands in the middle of the viewport.
+      const optional: Partial<SectionInput> = {}
+      if (args.diagram !== undefined) optional.diagram = readDiagram(args.diagram)
+      if (args.diagramPosition !== undefined) {
+        optional.diagramPosition = readDiagramPosition(args.diagramPosition)
+      }
+      if (args.formula !== undefined) {
+        const f = readString(args.formula).trim()
+        if (!f) throw new Error('formula cannot be empty when provided')
+        if (!optional.diagram) {
+          throw new Error('formula requires a diagram on the same block')
+        }
+        optional.formula = f
+      }
+      if (args.variables !== undefined) optional.variables = readVariables(args.variables)
+      if (optional.formula && !optional.variables) {
+        throw new Error('variables required when formula is provided')
+      }
+
       const pinnedSection = sectionsRef.current.find(s => s.pinned)
       if (pinnedSection) {
         const pinnedEl = document.getElementById(pinnedSection.id)
@@ -111,12 +203,10 @@ export function BrowserToolBridge() {
       }
 
       const newId = createId()
-      addSection({ id: newId, content: '', topic, className: 'agent-block' })
-      // Wait for React to commit the new element to the DOM
+      addSection({ id: newId, content: '', topic, className: 'agent-block', ...optional })
       await new Promise<void>(resolve => { requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) }) })
       const element = document.getElementById(newId)
       if (element) {
-        // Collapse to zero so the block emerges from between the previous section and the pinned tail
         element.style.height = '0px'
         element.style.minHeight = '0px'
         element.style.overflow = 'hidden'
@@ -129,7 +219,6 @@ export function BrowserToolBridge() {
         element.style.removeProperty('height')
         element.style.removeProperty('min-height')
         element.style.removeProperty('overflow')
-        // Orange outline flash to signal the block is ready for content
         element.animate(
           [
             { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
@@ -192,6 +281,86 @@ export function BrowserToolBridge() {
       if (!sectionsRef.current.find(s => s.id === id)) throw new Error(`Section not found: ${id}`)
       removeSection(id)
       return { id, removed: true }
+    },
+
+    set_block_diagram: async (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const id = readString(args.id).trim()
+      if (!id) throw new Error('id is required')
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      const diagram = readDiagram(args.diagram)
+      const updates: Partial<SectionInput> = { diagram }
+      if (args.diagramPosition !== undefined) {
+        updates.diagramPosition = readDiagramPosition(args.diagramPosition)
+      } else if (!section.diagramPosition) {
+        updates.diagramPosition = 'after'
+      }
+      const element = document.getElementById(id)
+      if (element) {
+        const rect = element.getBoundingClientRect()
+        const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+        if (!isInView) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          await new Promise(resolve => setTimeout(resolve, 380))
+        }
+      }
+      updateSection(id, updates)
+      flashBlockOutline(id)
+      return { id, updated: true }
+    },
+
+    set_block_formula: async (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const id = readString(args.id).trim()
+      if (!id) throw new Error('id is required')
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      if (!section.diagram) {
+        throw new Error(`Block ${id} has no diagram — set_block_diagram first`)
+      }
+      const formula = readString(args.formula).trim()
+      if (!formula) throw new Error('formula is required')
+      const variables = readVariables(args.variables)
+      const element = document.getElementById(id)
+      if (element) {
+        const rect = element.getBoundingClientRect()
+        const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+        if (!isInView) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          await new Promise(resolve => setTimeout(resolve, 380))
+        }
+      }
+      updateSection(id, { formula, variables })
+      flashBlockOutline(id)
+      return { id, updated: true }
+    },
+
+    clear_block_diagram: (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const id = readString(args.id).trim()
+      if (!id) throw new Error('id is required')
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      updateSection(id, {
+        diagram: undefined,
+        diagramPosition: undefined,
+        formula: undefined,
+        variables: undefined,
+      })
+      flashBlockOutline(id)
+      return { id, cleared: true }
+    },
+
+    clear_block_formula: (args: unknown) => {
+      if (!isObject(args)) throw new Error('Expected args object')
+      const id = readString(args.id).trim()
+      if (!id) throw new Error('id is required')
+      const section = sectionsRef.current.find(s => s.id === id)
+      if (!section) throw new Error(`Section not found: ${id}`)
+      updateSection(id, { formula: undefined, variables: undefined })
+      flashBlockOutline(id)
+      return { id, cleared: true }
     },
     }
   }, [addSection, removeSection, updateSection])
