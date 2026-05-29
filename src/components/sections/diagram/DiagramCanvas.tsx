@@ -189,7 +189,7 @@ export function DiagramCanvas({ data }: Readonly<{ data: DiagramJSON }>) {
   return (
     <div
       data-diagram-canvas
-      className="w-full min-h-[280px] md:min-h-[420px] h-full"
+      className="w-full h-[320px] md:h-[480px]"
     >
       <ClientOnly>
         <DiagramGraph data={data} />
