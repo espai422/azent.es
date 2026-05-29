@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { Block } from './Block'
 import type { SectionConfig } from './SectionContext'
 
@@ -76,5 +76,136 @@ describe('Block', () => {
   it('does not render <small> when topic is absent', () => {
     const { container } = render(<Block config={base} index={0} prevTab="none" />)
     expect(container.querySelector('small')).toBeNull()
+  })
+
+  // ── Diagram split layout ───────────────────────────────────────────────
+
+  it('does not render diagram region when config.diagram is absent', () => {
+    const { container } = render(<Block config={base} index={0} prevTab="none" />)
+    expect(container.querySelector('[data-diagram-canvas]')).toBeNull()
+  })
+
+  it('renders diagram region when config.diagram is present', () => {
+    const { container } = render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }], edges: [] },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    expect(container.querySelector('[data-diagram-canvas]')).toBeTruthy()
+  })
+
+  it('uses data-diagram-position="after" by default when diagram is present', () => {
+    const { container } = render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    expect(container.querySelector('[data-diagram-position="after"]')).toBeTruthy()
+  })
+
+  it('uses data-diagram-position="before" when explicitly set', () => {
+    const { container } = render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+          diagramPosition: 'before',
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    expect(container.querySelector('[data-diagram-position="before"]')).toBeTruthy()
+  })
+
+  it('renders variables when both diagram and formula are present', () => {
+    render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+          formula: 'a * b',
+          variables: { a: 1, b: 2 },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    const inputs = screen.getAllByRole('spinbutton')
+    expect(inputs).toHaveLength(2)
+  })
+
+  it('does not render variables when formula is absent (even with diagram)', () => {
+    const { container } = render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    expect(container.querySelectorAll('input[type="number"]')).toHaveLength(0)
+  })
+
+  it('renders the formula text inside the calculo region', () => {
+    render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+          formula: 'x + y',
+          variables: { x: 1, y: 2 },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    screen.getByText('x + y')
+  })
+
+  it('resets edited variable values when config.variables baseline changes', () => {
+    const { rerender } = render(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+          formula: 'a',
+          variables: { a: 5 },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    const input = screen.getByRole('spinbutton') as HTMLInputElement
+    expect(input.value).toBe('5')
+
+    fireEvent.change(input, { target: { value: '99' } })
+    expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe('99')
+
+    rerender(
+      <Block
+        config={{
+          ...base,
+          diagram: { nodes: [], edges: [] },
+          formula: 'a',
+          variables: { a: 10 },
+        }}
+        index={0}
+        prevTab="none"
+      />,
+    )
+    expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe('10')
   })
 })
