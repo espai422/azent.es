@@ -39,6 +39,7 @@ function writeSse(controller: ReadableStreamDefaultController<Uint8Array>, event
 
 export function createBrowserSessionStream(sessionId: string): ReadableStream<Uint8Array> {
   let streamController: ReadableStreamDefaultController<Uint8Array> | null = null
+  let heartbeat: ReturnType<typeof setInterval> | null = null
 
   return new ReadableStream<Uint8Array>({
     start(controller) {
@@ -47,12 +48,15 @@ export function createBrowserSessionStream(sessionId: string): ReadableStream<Ui
       const existing = sessions.get(sessionId)
       existing?.close()
 
-      const heartbeat = setInterval(() => {
+      heartbeat = setInterval(() => {
         writeSse(controller, { type: 'heartbeat', now: Date.now() })
       }, 20_000)
 
       const close = () => {
-        clearInterval(heartbeat)
+        if (heartbeat) {
+          clearInterval(heartbeat)
+          heartbeat = null
+        }
         sessions.delete(sessionId)
         try {
           controller.close()
@@ -65,6 +69,13 @@ export function createBrowserSessionStream(sessionId: string): ReadableStream<Ui
       writeSse(controller, { type: 'session.ready', sessionId })
     },
     cancel() {
+      // The stream was cancelled (browser disconnect, reload, navigation).
+      // Stop the heartbeat — otherwise it keeps firing on a closed controller
+      // and throws ERR_INVALID_STATE every 20s.
+      if (heartbeat) {
+        clearInterval(heartbeat)
+        heartbeat = null
+      }
       // Only delete the session if it still belongs to this stream instance.
       // If the browser reconnected before this cancel fires, a newer session
       // is already in the map — deleting it would break the new connection.
