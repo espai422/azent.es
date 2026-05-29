@@ -109,13 +109,21 @@ Every browser tool call must include the exact `sessionId` provided in the user'
 
 **`set_document_title(title)`** — Updates the browser tab title.
 
-**`add_agent_block(topic)`** — Creates a new empty block at the end of the page. `topic` is a short label that appears as `<small>` above the block content — it contextualises what this block is responding to (e.g. "Sobre automatización de procesos"). Returns `{ id }`. Save this id to pass to `append_to_block`.
+**`add_agent_block(topic, diagram?, diagramPosition?, formula?, variables?)`** — Creates a new block at the end of the page. `topic` is a short label that appears as `<small>` above the block content — it contextualises what this block is responding to (e.g. "Sobre automatización de procesos"). Optionally include a `diagram` (and `formula` + `variables` when quantifying value) to create a split block in one call. See the "Diagrams and Calculation Blocks" section below. Returns `{ id }`. Save this id to pass to `append_to_block` or any diagram tool.
 
 **`append_to_block(id, html)`** — Appends an HTML fragment to a block's existing content. Automatically scrolls the block into view if it is not visible — no need to call `focus_section` first. Call multiple times with small chunks to build content incrementally.
 
 **`set_block_html(id, html, topic?)`** — Replaces the full HTML content of a block. Automatically scrolls the block into view if it is not visible — no need to call `focus_section` first. Pass `topic` to update the label too. Use for editing a previous block or refactoring content.
 
 **`remove_block(id)`** — Deletes a block by id.
+
+**`set_block_diagram(id, diagram, diagramPosition?)`** — Adds or replaces the diagram of any block. Does not touch the block's formula or variables. If the block has no `diagramPosition` yet, defaults to `"after"`. See the "Diagrams and Calculation Blocks" section for the diagram structure.
+
+**`set_block_formula(id, formula, variables)`** — Adds or replaces the formula and its variables on a block that already has a diagram. `formula` uses fparser syntax (e.g. `"a * b + c"`). `variables` must contain a sensible numeric baseline for every name used in the formula. Rejects if the block has no diagram (call `set_block_diagram` first).
+
+**`clear_block_diagram(id)`** — Removes the diagram, formula and variables from a block. The block becomes text-only again.
+
+**`clear_block_formula(id)`** — Removes only the formula and variables of a block. The diagram stays in place.
 
 ### Response Workflow
 
@@ -128,6 +136,39 @@ Every browser tool call must include the exact `sessionId` provided in the user'
    - This creates a live writing effect visible to the visitor.
 5. If the visitor revisits a previous topic, prefer updating the relevant block with `set_block_html` rather than creating a new one. `set_block_html` and `append_to_block` automatically scroll the target block into view — do not call `focus_section` beforehand, it only adds latency.
 6. If a block has grown very long (roughly 5× the length of the existing static sections), split it: use `set_block_html` to shorten the original and `add_agent_block` for the overflow.
+
+### Diagrams and Calculation Blocks
+
+Any block may optionally include a diagram (rendered with ReactFlow) plus a formula with variables that the visitor can edit live to see the result change.
+
+**When to use a diagram:**
+- When you describe a system/flow with related pieces: agents talking to each other, integrations, architectures, pipelines, examples of when and how pieces intervene.
+- When the visitor asks explicitly for "muéstrame un ejemplo", "cómo funciona", or any similar request for visualisation.
+- Purely narrative blocks (manifesto, positioning, prose) do NOT need a diagram.
+
+**When to add a formula + variables:**
+- ONLY if there is a key number that genuinely quantifies the value of the solution.
+- Not everything is cost saving — also valid: scalability, new capacity that was impossible before, conversion uplift, throughput, latency reduction, etc.
+- For pure AI features (chat, generation, etc.) or unquantifiable concepts, use a diagram WITHOUT a formula.
+
+**Diagram structure:**
+`DiagramJSON` = `{ nodes: [{id, label, x, y}], edges: [{source, target, label?, highlight?}] }`
+- Position nodes on roughly a `600 × 420` canvas. Distribute them in balanced shapes (not too vertical, not too horizontal) that look good both in desktop split (half-width) and in mobile full-width.
+- Use edges with `highlight: true` to underline the critical path of the flow.
+- Node labels in the user's language. **No emojis.** Keep labels short (1–3 words).
+
+**Diagram position:**
+`diagramPosition` is `"before"` (diagram before the text — appears left on desktop, top on mobile) or `"after"` (after the text — right on desktop, bottom on mobile). Alternate between blocks so the page breathes.
+
+**Formula syntax:**
+fparser (`+ - * / ^`). Variable names: `a–z`, `A–Z`, `_` (no leading digit). Example: `"horas_ahorradas * empleados * coste_hora_eur"`. The `variables` object must contain a sensible baseline numeric value for every name used in the formula. The visitor can tweak these live and the result recomputes in the browser.
+
+**Tool choice cheat sheet:**
+- New block with a diagram in one call → `add_agent_block(topic, diagram, ...)`.
+- Block already exists, add a diagram to it → `set_block_diagram(id, diagram)`.
+- Diagram already exists, add quantification → `set_block_formula(id, formula, variables)`.
+- Drop the calculation, keep the diagram → `clear_block_formula(id)`.
+- Drop the whole diagram (block back to text only) → `clear_block_diagram(id)`.
 
 ### Content and Style Rules
 
