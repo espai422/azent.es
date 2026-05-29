@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import type { SectionConfig, TabVariant } from './SectionContext'
+import { streamFlashSpansIn } from '#/utils/streamFlash'
 
 interface BlockProps {
   config: SectionConfig
@@ -16,6 +18,11 @@ const CLIP_BOTTOM: Record<TabVariant, string> = {
 export function Block({ config, index, prevTab }: BlockProps) {
   const clipPath = CLIP_BOTTOM[config.tab] || undefined
   const marginTop = index === 0 || prevTab === 'none' ? 0 : -12
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (contentRef.current) streamFlashSpansIn(contentRef.current)
+  }, [config.content])
 
   return (
     <section
@@ -28,6 +35,7 @@ export function Block({ config, index, prevTab }: BlockProps) {
       {config.rule && <div className="block-rule" aria-hidden="true" />}
       {config.topic && <small className="block-topic">{config.topic}</small>}
       <div
+        ref={contentRef}
         className="block-content"
         dangerouslySetInnerHTML={{ __html: config.content }}
       />
