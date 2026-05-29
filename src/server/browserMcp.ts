@@ -68,7 +68,7 @@ function createBrowserMcpServer() {
   server.registerTool(
     'append_to_block',
     {
-      description: 'Append an HTML fragment to a block\'s content. Call multiple times with small chunks — one heading, one paragraph at a time — to create an incremental writing effect visible to the visitor in real time.',
+      description: 'Append an HTML fragment to a block\'s content. Automatically scrolls the block into view if it is not visible — no need to call focus_section first. Call multiple times with small chunks — one heading, one paragraph at a time — to create an incremental writing effect visible to the visitor in real time.',
       inputSchema: {
         sessionId,
         id: z.string().min(1).describe('Block id returned by add_agent_block.'),
@@ -81,7 +81,7 @@ function createBrowserMcpServer() {
   server.registerTool(
     'set_block_html',
     {
-      description: 'Replace the full HTML content of a block. Use for editing a previous response or refactoring. Optionally update the topic label.',
+      description: 'Replace the full HTML content of a block. Automatically scrolls the block into view if it is not visible — no need to call focus_section first. Use for editing a previous response or refactoring. Optionally update the topic label.',
       inputSchema: {
         sessionId,
         id: z.string().min(1),

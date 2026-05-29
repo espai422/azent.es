@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSections, type SectionInput } from '#/components/sections'
 import { createId } from '#/utils/id'
-import { diffHtml } from '#/utils/htmlDiff'
+import { diffHtml, stripFlashSpans, wrapAllTextAsFlash } from '#/utils/htmlDiff'
 
 type BrowserToolEvent =
   | { type: 'session.ready'; sessionId: string }
@@ -40,11 +40,26 @@ export function BrowserToolBridge() {
     sectionsRef.current = sections
   }, [sections])
 
-  const tools = useMemo(() => ({
+  const tools = useMemo(() => {
+    async function scrollIntoViewIfNeeded(id: string) {
+      const element = document.getElementById(id)
+      if (!element) return
+      const rect = element.getBoundingClientRect()
+      const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+      if (isInView) return
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      await new Promise(resolve => setTimeout(resolve, 380))
+    }
+
+    return {
     get_page_snapshot: () => ({
       title: document.title,
       url: window.location.href,
-      sections: sectionsRef.current.map((section, index) => ({ index, ...section })),
+      sections: sectionsRef.current.map((section, index) => ({
+        index,
+        ...section,
+        content: stripFlashSpans(section.content),
+      })),
     }),
 
     set_document_title: (args: unknown) => {
@@ -128,34 +143,28 @@ export function BrowserToolBridge() {
       return { id: newId }
     },
 
-    append_to_block: (args: unknown) => {
+    append_to_block: async (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
       const id = readString(args.id)
       const html = readString(args.html).trim()
       if (!id || !html) throw new Error('id and html are required')
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
-      updateSection(id, { content: section.content + html })
-      // Flash the last child element to highlight newly added content (fire-and-forget)
-      setTimeout(() => {
-        const contentEl = document.getElementById(id)?.querySelector('.block-content')
-        if (contentEl?.lastElementChild) {
-          ;(contentEl.lastElementChild as HTMLElement).animate(
-            [{ backgroundColor: 'rgba(255,107,43,0.15)' }, { backgroundColor: 'transparent' }],
-            { duration: 350, easing: 'ease-out' },
-          )
-        }
-      }, 0)
+      await scrollIntoViewIfNeeded(id)
+      const existing = stripFlashSpans(section.content)
+      const appended = wrapAllTextAsFlash(html)
+      updateSection(id, { content: existing + appended })
       return { id }
     },
 
-    set_block_html: (args: unknown) => {
+    set_block_html: async (args: unknown) => {
       if (!isObject(args)) throw new Error('Expected args object')
       const id = readString(args.id)
       const html = readString(args.html).trim()
       if (!id || !html) throw new Error('id and html are required')
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
+      await scrollIntoViewIfNeeded(id)
       const annotated = diffHtml(section.content, html)
       const updates: Partial<SectionInput> = { content: annotated }
       if (typeof args.topic === 'string' && args.topic.trim()) {
@@ -184,7 +193,8 @@ export function BrowserToolBridge() {
       removeSection(id)
       return { id, removed: true }
     },
-  }), [addSection, removeSection, updateSection])
+    }
+  }, [addSection, removeSection, updateSection])
 
   useEffect(() => {
     const nextSessionId = getSessionId()

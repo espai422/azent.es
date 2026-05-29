@@ -1,3 +1,24 @@
+export function stripFlashSpans(html: string): string {
+  if (!html) return html
+  const doc = new DOMParser().parseFromString(`<root>${html}</root>`, 'text/html')
+  const root = doc.body.firstChild as HTMLElement | null
+  if (!root) return html
+  unwrapFlashSpans(root)
+  root.normalize()
+  return root.innerHTML
+}
+
+export function wrapAllTextAsFlash(html: string): string {
+  if (!html) return html
+  const doc = new DOMParser().parseFromString(`<root>${html}</root>`, 'text/html')
+  const root = doc.body.firstChild as HTMLElement | null
+  if (!root) return html
+  unwrapFlashSpans(root)
+  root.normalize()
+  markAllTextAsNew(root, doc)
+  return root.innerHTML
+}
+
 export function diffHtml(oldHtml: string, newHtml: string): string {
   const parser = new DOMParser()
   const oldDoc = parser.parseFromString(`<root>${oldHtml}</root>`, 'text/html')
@@ -9,6 +30,8 @@ export function diffHtml(oldHtml: string, newHtml: string): string {
     unwrapFlashSpans(oldRoot)
     oldRoot.normalize()
   }
+  unwrapFlashSpans(newRoot)
+  newRoot.normalize()
   walk(oldRoot, newRoot, newDoc)
   return newRoot.innerHTML
 }

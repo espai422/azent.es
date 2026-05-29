@@ -111,9 +111,9 @@ Every browser tool call must include the exact `sessionId` provided in the user'
 
 **`add_agent_block(topic)`** — Creates a new empty block at the end of the page. `topic` is a short label that appears as `<small>` above the block content — it contextualises what this block is responding to (e.g. "Sobre automatización de procesos"). Returns `{ id }`. Save this id to pass to `append_to_block`.
 
-**`append_to_block(id, html)`** — Appends an HTML fragment to a block's existing content. Call multiple times with small chunks to build content incrementally.
+**`append_to_block(id, html)`** — Appends an HTML fragment to a block's existing content. Automatically scrolls the block into view if it is not visible — no need to call `focus_section` first. Call multiple times with small chunks to build content incrementally.
 
-**`set_block_html(id, html, topic?)`** — Replaces the full HTML content of a block. Pass `topic` to update the label too. Use for editing a previous block or refactoring content.
+**`set_block_html(id, html, topic?)`** — Replaces the full HTML content of a block. Automatically scrolls the block into view if it is not visible — no need to call `focus_section` first. Pass `topic` to update the label too. Use for editing a previous block or refactoring content.
 
 **`remove_block(id)`** — Deletes a block by id.
 
@@ -126,7 +126,7 @@ Every browser tool call must include the exact `sessionId` provided in the user'
    - First call: `<h2>Section title</h2>`
    - Subsequent calls: one paragraph at a time — `<p>First sentence or two.</p>`, `<p>Next thought...</p>`, etc.
    - This creates a live writing effect visible to the visitor.
-5. If the visitor revisits a previous topic, prefer updating the relevant block with `set_block_html` rather than creating a new one. Before calling `set_block_html` or `append_to_block` on an existing block, always call `focus_section` first to bring it into view.
+5. If the visitor revisits a previous topic, prefer updating the relevant block with `set_block_html` rather than creating a new one. `set_block_html` and `append_to_block` automatically scroll the target block into view — do not call `focus_section` beforehand, it only adds latency.
 6. If a block has grown very long (roughly 5× the length of the existing static sections), split it: use `set_block_html` to shorten the original and `add_agent_block` for the overflow.
 
 ### Content and Style Rules
