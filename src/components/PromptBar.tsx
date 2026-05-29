@@ -114,16 +114,16 @@ export function PromptBar() {
         )}
 
         <form
-          className="pointer-events-auto rounded-[1.4rem] border border-white/12 bg-neutral-950/88 p-2 shadow-[0_18px_70px_rgba(0,0,0,0.48)] backdrop-blur-2xl"
+          className={`pointer-events-auto rounded-2xl border border-white/12 bg-neutral-950/88 p-1.5 shadow-[0_18px_70px_rgba(0,0,0,0.48)] backdrop-blur-2xl sm:rounded-[1.4rem] sm:p-2 ${status === 'sending' ? 'hidden sm:block' : ''}`}
           autoComplete="off"
           onSubmit={(event) => void handleSubmit(event)}
         >
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-1.5 sm:gap-2">
             <textarea
               ref={textareaRef}
               aria-label="Prompt para modificar la web"
               aria-autocomplete="none"
-              className="min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-[16px] leading-6 text-white outline-none placeholder:text-zinc-500 sm:text-sm"
+              className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] leading-5 text-white outline-none placeholder:text-zinc-500 sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm sm:leading-6"
               id="azent-prompt-composer"
               name="azent-prompt-composer"
               placeholder="Pide un cambio en la web..."
@@ -155,14 +155,14 @@ export function PromptBar() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-black transition duration-200 hover:scale-[1.03] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:scale-100"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-black transition duration-200 hover:scale-[1.03] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:scale-100 sm:h-12 sm:w-12 sm:rounded-2xl"
               aria-label="Enviar prompt"
               title="Enviar prompt"
             >
               {status === 'sending' ? (
-                <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+                <LoaderCircle className="h-4 w-4 animate-spin sm:h-5 sm:w-5" aria-hidden="true" />
               ) : (
-                <ArrowUp className="h-5 w-5" aria-hidden="true" />
+                <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               )}
             </button>
           </div>
