@@ -261,7 +261,23 @@ Flash naranja del borde del bloque al recibir `set_block_diagram` y
 
 ## Prompt del agente
 
-Extender el system message en `src/routes/api/chat/stream.ts` con:
+El system prompt real del agente vive en `.codex-browser-agent/AGENTS.md`
+(Codex SDK arranca el thread con `workingDirectory:
+.codex-browser-agent/` — ver `src/server/codex.ts:48` — y Codex carga
+`AGENTS.md` desde el working directory automáticamente). Allí se documentan
+las tools, el workflow y la persona. `src/routes/api/chat/stream.ts` solo
+añade un mini-wrapper con el session id y un par de recordatorios; se deja
+intacto.
+
+Extender `.codex-browser-agent/AGENTS.md` con:
+
+- Actualizar la descripción de `add_agent_block` para reflejar los nuevos
+  parámetros opcionales (`diagram`, `diagramPosition`, `formula`,
+  `variables`).
+- Añadir entradas en `### Tool Reference` para `set_block_diagram`,
+  `set_block_formula`, `clear_block_diagram`, `clear_block_formula`.
+- Añadir una nueva sección `### Diagrams and Calculation Blocks` (antes
+  de `### Content and Style Rules`) con:
 
 ```
 DIAGRAMAS Y BLOQUES CON CÁLCULO
@@ -324,7 +340,8 @@ FÓRMULA
   tools nuevas/extendidas
 - `src/server/browserMcp.ts` — registrar tools MCP nuevas con Zod;
   extender `add_agent_block` y `get_page_snapshot`
-- `src/routes/api/chat/stream.ts` — extender prompt del agente
+- `.codex-browser-agent/AGENTS.md` — actualizar Tool Reference y añadir
+  sección `### Diagrams and Calculation Blocks` con heurísticas
 - `src/styles.css` — estilos del split layout, separador
   variables/cálculo, override de styling de ReactFlow para alinear con
   variables `--prose-*`

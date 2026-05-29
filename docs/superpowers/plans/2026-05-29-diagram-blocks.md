@@ -1688,82 +1688,98 @@ git commit -m "feat: register diagram MCP tools with Zod validation"
 
 ---
 
-## Task 17: Extend the agent prompt with diagram usage instructions
+## Task 17: Extend the agent context with diagram usage instructions
+
+The real system prompt for the Codex browser agent lives in
+`.codex-browser-agent/AGENTS.md` (Codex SDK starts the thread with
+`workingDirectory: .codex-browser-agent/`, and Codex reads `AGENTS.md`
+from the working directory automatically). `src/routes/api/chat/stream.ts`
+only adds a small per-turn wrapper with the session id and a couple of
+reminders, so it is left untouched.
 
 **Files:**
-- Modify: `src/routes/api/chat/stream.ts`
+- Modify: `.codex-browser-agent/AGENTS.md`
 
-- [ ] **Step 1: Replace the inline `prompt` array**
+- [ ] **Step 1: Update the `add_agent_block` tool description**
 
-Open `src/routes/api/chat/stream.ts`. Find the existing `const prompt = [...]` block (around lines 101-110). Replace it entirely with:
+In `.codex-browser-agent/AGENTS.md`, find the existing line describing
+`add_agent_block` (currently around line 112). Replace this line:
 
-```ts
-        const prompt = [
-          `Browser session id: ${browserSessionId}`,
-          '',
-          'You can control the current web page through the browser_tools MCP server.',
-          'Every browser_tools call requires the exact browserSessionId above.',
-          'Prefer using get_page_snapshot first, then apply focused changes with the browser tools.',
-          'Keep the user updated briefly in Spanish while you work.',
-          '',
-          'DIAGRAMS AND CALCULATION BLOCKS',
-          '',
-          'Any block may optionally include a diagram (ReactFlow) plus a formula with variables that the visitor can edit live.',
-          '',
-          'WHEN TO USE A DIAGRAM',
-          '- When you describe a system/flow with related pieces: agents talking to each other,',
-          '  integrations, architectures, pipelines, examples of when and how pieces intervene.',
-          '- When the visitor asks explicitly for "muéstrame un ejemplo", "cómo funciona",',
-          '  or a similar request for visualisation.',
-          '- Purely narrative blocks (manifesto, positioning, prose) do NOT need a diagram.',
-          '',
-          'WHEN TO ADD A FORMULA + VARIABLES',
-          '- ONLY if there is a key number that quantifies the value of the solution.',
-          '- Not everything is cost saving — also valid: scalability, new capacity that was',
-          '  impossible before, conversion uplift, throughput, latency, etc.',
-          '- For pure AI features (chat, generation, etc.) or unquantifiable concepts,',
-          '  use a diagram WITHOUT a formula.',
-          '',
-          'DIAGRAM STRUCTURE',
-          '- DiagramJSON: { nodes: [{id, label, x, y}], edges: [{source, target, label?, highlight?}] }',
-          '- Positions on a ~600×420 canvas. Distribute nodes with balanced shapes',
-          '  (not too vertical, not too horizontal) that look good both in desktop split',
-          '  (half-width) and in mobile full-width.',
-          '- Use edges with highlight:true to underline the critical path of the flow.',
-          '- Node labels in the user\'s language. NO emojis. Keep them short (1–3 words).',
-          '',
-          'POSITION',
-          '- diagramPosition: "before" (diagram before the text) or "after" (after).',
-          '- Alternate between blocks so the page breathes.',
-          '',
-          'FORMULA',
-          '- fparser syntax: + - * / ^. Variable names: a–z, A–Z, _ (no leading digit).',
-          '- Example: "horas_ahorradas * empleados * coste_hora_eur"',
-          '- The `variables` object MUST contain a sensible baseline numeric value for every',
-          '  name used in the formula. The visitor can tweak these live.',
-          '',
-          'AVAILABLE TOOLS FOR DIAGRAMS',
-          '- add_agent_block: create a new block, optionally with diagram/formula/variables in one call.',
-          '- set_block_diagram: add or replace the diagram of any block.',
-          '- set_block_formula: add or replace the formula+variables (requires existing diagram).',
-          '- clear_block_diagram: remove the diagram (also clears formula+variables).',
-          '- clear_block_formula: remove only the formula+variables, keep the diagram.',
-          '',
-          `User request: ${message}`,
-        ].join('\n')
+```markdown
+**`add_agent_block(topic)`** — Creates a new empty block at the end of the page. `topic` is a short label that appears as `<small>` above the block content — it contextualises what this block is responding to (e.g. "Sobre automatización de procesos"). Returns `{ id }`. Save this id to pass to `append_to_block`.
 ```
 
-- [ ] **Step 2: Run tests**
+with:
+
+```markdown
+**`add_agent_block(topic, diagram?, diagramPosition?, formula?, variables?)`** — Creates a new block at the end of the page. `topic` is a short label that appears as `<small>` above the block content — it contextualises what this block is responding to (e.g. "Sobre automatización de procesos"). Optionally include a `diagram` (and `formula` + `variables` when quantifying value) to create a split block in one call. See the "Diagrams and Calculation Blocks" section below. Returns `{ id }`. Save this id to pass to `append_to_block` or any diagram tool.
+```
+
+- [ ] **Step 2: Register the four new diagram tools in the Tool Reference**
+
+In the same file, find the existing `remove_block` description (currently around line 118). Right after it (before the `### Response Workflow` heading), add:
+
+```markdown
+**`set_block_diagram(id, diagram, diagramPosition?)`** — Adds or replaces the diagram of any block. Does not touch the block's formula or variables. If the block has no `diagramPosition` yet, defaults to `"after"`. See the "Diagrams and Calculation Blocks" section for the diagram structure.
+
+**`set_block_formula(id, formula, variables)`** — Adds or replaces the formula and its variables on a block that already has a diagram. `formula` uses fparser syntax (e.g. `"a * b + c"`). `variables` must contain a sensible numeric baseline for every name used in the formula. Rejects if the block has no diagram (call `set_block_diagram` first).
+
+**`clear_block_diagram(id)`** — Removes the diagram, formula and variables from a block. The block becomes text-only again.
+
+**`clear_block_formula(id)`** — Removes only the formula and variables of a block. The diagram stays in place.
+```
+
+- [ ] **Step 3: Add a "Diagrams and Calculation Blocks" section**
+
+In the same file, find the `### Content and Style Rules` heading (currently around line 132). **Right before** that heading, add this new section:
+
+```markdown
+### Diagrams and Calculation Blocks
+
+Any block may optionally include a diagram (rendered with ReactFlow) plus a formula with variables that the visitor can edit live to see the result change.
+
+**When to use a diagram:**
+- When you describe a system/flow with related pieces: agents talking to each other, integrations, architectures, pipelines, examples of when and how pieces intervene.
+- When the visitor asks explicitly for "muéstrame un ejemplo", "cómo funciona", or any similar request for visualisation.
+- Purely narrative blocks (manifesto, positioning, prose) do NOT need a diagram.
+
+**When to add a formula + variables:**
+- ONLY if there is a key number that genuinely quantifies the value of the solution.
+- Not everything is cost saving — also valid: scalability, new capacity that was impossible before, conversion uplift, throughput, latency reduction, etc.
+- For pure AI features (chat, generation, etc.) or unquantifiable concepts, use a diagram WITHOUT a formula.
+
+**Diagram structure:**
+`DiagramJSON` = `{ nodes: [{id, label, x, y}], edges: [{source, target, label?, highlight?}] }`
+- Position nodes on roughly a `600 × 420` canvas. Distribute them in balanced shapes (not too vertical, not too horizontal) that look good both in desktop split (half-width) and in mobile full-width.
+- Use edges with `highlight: true` to underline the critical path of the flow.
+- Node labels in the user's language. **No emojis.** Keep labels short (1–3 words).
+
+**Diagram position:**
+`diagramPosition` is `"before"` (diagram before the text — appears left on desktop, top on mobile) or `"after"` (after the text — right on desktop, bottom on mobile). Alternate between blocks so the page breathes.
+
+**Formula syntax:**
+fparser (`+ - * / ^`). Variable names: `a–z`, `A–Z`, `_` (no leading digit). Example: `"horas_ahorradas * empleados * coste_hora_eur"`. The `variables` object must contain a sensible baseline numeric value for every name used in the formula. The visitor can tweak these live and the result recomputes in the browser.
+
+**Tool choice cheat sheet:**
+- New block with a diagram in one call → `add_agent_block(topic, diagram, ...)`.
+- Block already exists, add a diagram to it → `set_block_diagram(id, diagram)`.
+- Diagram already exists, add quantification → `set_block_formula(id, formula, variables)`.
+- Drop the calculation, keep the diagram → `clear_block_formula(id)`.
+- Drop the whole diagram (block back to text only) → `clear_block_diagram(id)`.
+
+```
+
+- [ ] **Step 4: Verify the file still parses cleanly**
 
 Run: `pnpm test`
 
-Expected: all tests pass (this file has no tests).
+Expected: all tests pass (AGENTS.md is markdown — no build impact, just sanity that the repo still works).
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add src/routes/api/chat/stream.ts
-git commit -m "feat: extend agent prompt with diagram block usage heuristics"
+git add .codex-browser-agent/AGENTS.md
+git commit -m "feat: document diagram blocks and tools in browser agent context"
 ```
 
 ---
