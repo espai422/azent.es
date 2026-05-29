@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from 'react'
+import type { DiagramJSON } from './diagram/types'
 import { createId } from '#/utils/id'
 
 export type SectionTheme = 'dark-1' | 'light-2' | 'dark-2' | 'light-1' | 'closing'
@@ -13,6 +14,10 @@ export interface SectionConfig {
   topic?: string
   className?: string
   pinned?: boolean
+  diagram?: DiagramJSON
+  diagramPosition?: 'before' | 'after'
+  formula?: string
+  variables?: Record<string, number>
 }
 
 export type SectionInput = {
@@ -24,6 +29,10 @@ export type SectionInput = {
   topic?: string
   className?: string
   pinned?: boolean
+  diagram?: DiagramJSON
+  diagramPosition?: 'before' | 'after'
+  formula?: string
+  variables?: Record<string, number>
 }
 
 const COLOR_CYCLE: SectionTheme[] = ['dark-1', 'light-2', 'dark-2', 'light-1']
@@ -41,6 +50,10 @@ export function resolveSection(input: SectionInput, nonClosingCount: number): Se
     topic: input.topic,
     className: input.className,
     pinned: input.pinned,
+    diagram: input.diagram,
+    diagramPosition: input.diagramPosition,
+    formula: input.formula,
+    variables: input.variables,
   }
 }
 

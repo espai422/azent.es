@@ -168,3 +168,73 @@ describe('sectionsReducer', () => {
     expect(state.sections[1].pinned).toBe(true)
   })
 })
+
+describe('resolveSection — diagram fields', () => {
+  it('preserves diagram when provided', () => {
+    const diagram = { nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }], edges: [] }
+    expect(resolveSection({ content: '', diagram }, 0).diagram).toEqual(diagram)
+  })
+
+  it('preserves diagramPosition when provided', () => {
+    expect(resolveSection({ content: '', diagramPosition: 'before' }, 0).diagramPosition).toBe('before')
+  })
+
+  it('preserves formula when provided', () => {
+    expect(resolveSection({ content: '', formula: 'a * b' }, 0).formula).toBe('a * b')
+  })
+
+  it('preserves variables when provided', () => {
+    expect(resolveSection({ content: '', variables: { a: 1, b: 2 } }, 0).variables).toEqual({ a: 1, b: 2 })
+  })
+
+  it('diagram is undefined when not provided', () => {
+    expect(resolveSection({ content: '' }, 0).diagram).toBeUndefined()
+  })
+})
+
+describe('sectionsReducer — diagram UPDATE merge', () => {
+  const empty = { sections: [] as SectionConfig[] }
+
+  it('UPDATE can patch diagram without touching content', () => {
+    let state = sectionsReducer(empty, {
+      type: 'ADD',
+      payload: { id: 'a', content: '<p>hi</p>' },
+    })
+    const diagram = { nodes: [{ id: 'n1', label: 'N1', x: 0, y: 0 }], edges: [] }
+    state = sectionsReducer(state, { type: 'UPDATE', id: 'a', payload: { diagram } })
+    expect(state.sections[0].diagram).toEqual(diagram)
+    expect(state.sections[0].content).toBe('<p>hi</p>')
+  })
+
+  it('UPDATE can patch formula and variables without touching diagram', () => {
+    const diagram = { nodes: [{ id: 'n1', label: 'N1', x: 0, y: 0 }], edges: [] }
+    let state = sectionsReducer(empty, {
+      type: 'ADD',
+      payload: { id: 'a', content: '', diagram },
+    })
+    state = sectionsReducer(state, {
+      type: 'UPDATE',
+      id: 'a',
+      payload: { formula: 'a * b', variables: { a: 2, b: 3 } },
+    })
+    expect(state.sections[0].formula).toBe('a * b')
+    expect(state.sections[0].variables).toEqual({ a: 2, b: 3 })
+    expect(state.sections[0].diagram).toEqual(diagram)
+  })
+
+  it('UPDATE can clear diagram by setting it to undefined', () => {
+    const diagram = { nodes: [{ id: 'n1', label: 'N1', x: 0, y: 0 }], edges: [] }
+    let state = sectionsReducer(empty, {
+      type: 'ADD',
+      payload: { id: 'a', content: '', diagram, formula: 'a', variables: { a: 1 } },
+    })
+    state = sectionsReducer(state, {
+      type: 'UPDATE',
+      id: 'a',
+      payload: { diagram: undefined, formula: undefined, variables: undefined, diagramPosition: undefined },
+    })
+    expect(state.sections[0].diagram).toBeUndefined()
+    expect(state.sections[0].formula).toBeUndefined()
+    expect(state.sections[0].variables).toBeUndefined()
+  })
+})
