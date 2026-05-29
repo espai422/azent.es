@@ -5,6 +5,32 @@ import { invokeBrowserTool } from './browserTools'
 
 const sessionId = z.string().min(1).describe('Ephemeral browser session id for the current tab.')
 
+const diagramNodeSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  x: z.number().finite(),
+  y: z.number().finite(),
+})
+
+const diagramEdgeSchema = z.object({
+  id: z.string().min(1).optional(),
+  source: z.string().min(1),
+  target: z.string().min(1),
+  label: z.string().optional(),
+  highlight: z.boolean().optional(),
+})
+
+const diagramSchema = z.object({
+  nodes: z.array(diagramNodeSchema),
+  edges: z.array(diagramEdgeSchema),
+}).describe('Diagram structure with nodes (id, label, x, y) and edges (source, target).')
+
+const variablesSchema = z.record(z.string().min(1), z.number().finite())
+  .describe('Map of variable names to numeric values. Every name used in the formula must be present.')
+
+const diagramPositionSchema = z.enum(['before', 'after'])
+  .describe('Where the diagram appears relative to the text: "before" (left in desktop / top in mobile) or "after" (right in desktop / bottom in mobile).')
+
 type ToolArgs = Record<string, unknown>
 
 async function invoke(toolName: string, session: string, args: ToolArgs = {}) {
@@ -56,13 +82,24 @@ function createBrowserMcpServer() {
   server.registerTool(
     'add_agent_block',
     {
-      description: 'Append a new empty block at the end of the page. The topic appears as a <small> label above the content, contextualising what the block responds to. Returns the block id — save it for append_to_block calls.',
+      description: 'Append a new block at the end of the page. The topic appears as a <small> label above the content, contextualising what the block responds to. Optionally include a diagram (with formula+variables) to create a split block in one call. Returns the block id — save it for follow-up tool calls.',
       inputSchema: {
         sessionId,
         topic: z.string().min(1).describe('Short label shown as <small>. Explains what this block is responding to, e.g. "Sobre automatización de procesos".'),
+        diagram: diagramSchema.optional(),
+        diagramPosition: diagramPositionSchema.optional(),
+        formula: z.string().min(1).optional().describe('fparser syntax (+ - * / ^ and named variables). Only meaningful when diagram is also provided.'),
+        variables: variablesSchema.optional(),
       },
     },
-    ({ sessionId, topic }) => invoke('add_agent_block', sessionId, { topic }),
+    ({ sessionId, topic, diagram, diagramPosition, formula, variables }) =>
+      invoke('add_agent_block', sessionId, {
+        topic,
+        ...(diagram !== undefined ? { diagram } : {}),
+        ...(diagramPosition !== undefined ? { diagramPosition } : {}),
+        ...(formula !== undefined ? { formula } : {}),
+        ...(variables !== undefined ? { variables } : {}),
+      }),
   )
 
   server.registerTool(
@@ -99,6 +136,58 @@ function createBrowserMcpServer() {
       inputSchema: { sessionId, id: z.string().min(1) },
     },
     ({ sessionId, id }) => invoke('remove_block', sessionId, { id }),
+  )
+
+  server.registerTool(
+    'set_block_diagram',
+    {
+      description: 'Add or replace the diagram of any block. Does not touch the block formula or variables. If the block has no diagramPosition yet, defaults to "after". Scrolls the block into view if needed and flashes an orange border.',
+      inputSchema: {
+        sessionId,
+        id: z.string().min(1).describe('Block id.'),
+        diagram: diagramSchema,
+        diagramPosition: diagramPositionSchema.optional(),
+      },
+    },
+    ({ sessionId, id, diagram, diagramPosition }) =>
+      invoke('set_block_diagram', sessionId, {
+        id,
+        diagram,
+        ...(diagramPosition !== undefined ? { diagramPosition } : {}),
+      }),
+  )
+
+  server.registerTool(
+    'set_block_formula',
+    {
+      description: 'Add or replace the formula and variables of a block that already has a diagram. The formula uses fparser syntax (+ - * / ^ and named variables). The variables object must contain a baseline numeric value for every name used in the formula. Rejects if the block has no diagram.',
+      inputSchema: {
+        sessionId,
+        id: z.string().min(1).describe('Block id.'),
+        formula: z.string().min(1).describe('fparser expression, e.g. "horas_ahorradas * empleados * coste_hora_eur".'),
+        variables: variablesSchema,
+      },
+    },
+    ({ sessionId, id, formula, variables }) =>
+      invoke('set_block_formula', sessionId, { id, formula, variables }),
+  )
+
+  server.registerTool(
+    'clear_block_diagram',
+    {
+      description: 'Remove the diagram, formula and variables from a block. The block becomes text-only again.',
+      inputSchema: { sessionId, id: z.string().min(1).describe('Block id.') },
+    },
+    ({ sessionId, id }) => invoke('clear_block_diagram', sessionId, { id }),
+  )
+
+  server.registerTool(
+    'clear_block_formula',
+    {
+      description: 'Remove only the formula and variables of a block. The diagram stays in place.',
+      inputSchema: { sessionId, id: z.string().min(1).describe('Block id.') },
+    },
+    ({ sessionId, id }) => invoke('clear_block_formula', sessionId, { id }),
   )
 
   return server
