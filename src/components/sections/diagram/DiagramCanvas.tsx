@@ -16,6 +16,14 @@ import '@xyflow/react/dist/style.css'
 
 type AzentNodeData = { label: string }
 
+const HANDLE_STYLE = {
+  background: 'transparent',
+  border: 'none',
+  width: 1,
+  height: 1,
+  opacity: 0,
+} as const
+
 function AzentNode({ data, selected }: NodeProps<Node<AzentNodeData>>) {
   return (
     <div
@@ -32,11 +40,18 @@ function AzentNode({ data, selected }: NodeProps<Node<AzentNodeData>>) {
         fontFamily: 'var(--font-sans)',
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: 'var(--prose-muted)', border: 'none', width: 1, height: 1, opacity: 0.5 }}
-      />
+      {/* Four invisible handles per side (source + target). The edge code picks
+          the right pair based on the relative position of the two nodes so
+          curves take the shortest natural path instead of always looping
+          top-to-bottom. */}
+      <Handle id="t-top"    type="target" position={Position.Top}    style={HANDLE_STYLE} />
+      <Handle id="s-top"    type="source" position={Position.Top}    style={HANDLE_STYLE} />
+      <Handle id="t-right"  type="target" position={Position.Right}  style={HANDLE_STYLE} />
+      <Handle id="s-right"  type="source" position={Position.Right}  style={HANDLE_STYLE} />
+      <Handle id="t-bottom" type="target" position={Position.Bottom} style={HANDLE_STYLE} />
+      <Handle id="s-bottom" type="source" position={Position.Bottom} style={HANDLE_STYLE} />
+      <Handle id="t-left"   type="target" position={Position.Left}   style={HANDLE_STYLE} />
+      <Handle id="s-left"   type="source" position={Position.Left}   style={HANDLE_STYLE} />
       <div
         style={{
           fontSize: 13,
@@ -47,11 +62,6 @@ function AzentNode({ data, selected }: NodeProps<Node<AzentNodeData>>) {
       >
         {data.label}
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: 'var(--prose-muted)', border: 'none', width: 1, height: 1, opacity: 0.5 }}
-      />
     </div>
   )
 }
@@ -134,28 +144,57 @@ function toRFNodes(defs: DiagramNodeDef[]): Node[] {
   }))
 }
 
-function toRFEdges(defs: DiagramEdgeDef[]): Edge[] {
-  return defs.map((e, i) => ({
-    id: e.id ?? `e-${i}`,
-    source: e.source,
-    target: e.target,
-    type: 'azent',
-    label: e.label,
-    data: { highlight: e.highlight === true },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color: e.highlight ? 'var(--prose-accent)' : 'var(--prose-muted)',
-    },
-  }))
+type Side = 'top' | 'right' | 'bottom' | 'left'
+
+// Decide which side of the source node and which side of the target node the
+// edge should attach to, based on their relative positions. Compares the
+// dominant axis between centers; node sizes are similar enough that comparing
+// top-left coordinates yields the same dominant axis.
+function pickSides(source: DiagramNodeDef, target: DiagramNodeDef): { source: Side; target: Side } {
+  const dx = target.x - source.x
+  const dy = target.y - source.y
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0
+      ? { source: 'right', target: 'left' }
+      : { source: 'left', target: 'right' }
+  }
+  return dy > 0
+    ? { source: 'bottom', target: 'top' }
+    : { source: 'top', target: 'bottom' }
+}
+
+function toRFEdges(defs: DiagramEdgeDef[], nodes: DiagramNodeDef[]): Edge[] {
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]))
+  return defs.map((e, i) => {
+    const sourceNode = nodeMap.get(e.source)
+    const targetNode = nodeMap.get(e.target)
+    const sides = sourceNode && targetNode
+      ? pickSides(sourceNode, targetNode)
+      : ({ source: 'bottom', target: 'top' } as const)
+    return {
+      id: e.id ?? `e-${i}`,
+      source: e.source,
+      target: e.target,
+      sourceHandle: `s-${sides.source}`,
+      targetHandle: `t-${sides.target}`,
+      type: 'azent',
+      label: e.label,
+      data: { highlight: e.highlight === true },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: e.highlight ? 'var(--prose-accent)' : 'var(--prose-muted)',
+      },
+    }
+  })
 }
 
 function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
   const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(data.nodes))
-  const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(data.edges))
+  const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(data.edges, data.nodes))
 
   useEffect(() => {
     setNodes(toRFNodes(data.nodes))
-    setEdges(toRFEdges(data.edges))
+    setEdges(toRFEdges(data.edges, data.nodes))
   }, [data, setNodes, setEdges])
 
   return (

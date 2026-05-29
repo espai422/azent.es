@@ -157,14 +157,45 @@ Any block may optionally include a diagram (rendered with ReactFlow) plus a form
 - Use edges with `highlight: true` to underline the critical path of the flow.
 - Node labels in the user's language. **No emojis.** Keep labels short (1–3 words).
 
+**Node layout rules — read carefully:**
+- Think in **stages/layers** of a flow. Place nodes that belong to the same stage at the same x (vertical flow) or same y (horizontal flow). A flow with 3 stages and 1–2 nodes per stage is usually the right granularity.
+- Leave at least **140px** between node centers — both horizontally and vertically. Nodes that are too close make the layout feel cramped and labels overlap.
+- Avoid placing two nodes such that an edge between OTHER nodes has to cross over them. If A→B and C→D, don't park A directly between C and D.
+- A node measures roughly 120×50 pixels at minimum. The x,y you give is the **top-left corner** of that box, not its center.
+- Edges automatically pick the closest side of each node to attach to — you do NOT need to think about "which side does the arrow come out of". Just place nodes with enough breathing room and the routing will be clean.
+
+**Good layout examples (3-stage left-to-right flow):**
+- `{ x: 40,  y: 100 }` → first stage (top), `{ x: 40,  y: 220 }` → first stage (bottom)
+- `{ x: 240, y: 160 }` → middle (single)
+- `{ x: 440, y: 100 }` → last stage (top), `{ x: 440, y: 220 }` → last stage (bottom)
+
+**Good layout examples (top-to-bottom funnel):**
+- `{ x: 200, y: 30 }`  → step 1
+- `{ x: 200, y: 160 }` → step 2
+- `{ x: 200, y: 290 }` → step 3
+
 **Diagram position:**
 `diagramPosition` is `"before"` (diagram before the text — appears left on desktop, top on mobile) or `"after"` (after the text — right on desktop, bottom on mobile). Alternate between blocks so the page breathes.
 
 **Formula syntax:**
 fparser (`+ - * / ^`). Variable names: `a–z`, `A–Z`, `_` (no leading digit). Example: `"horas_ahorradas * empleados * coste_hora_eur"`. The `variables` object must contain a sensible baseline numeric value for every name used in the formula. The visitor can tweak these live and the result recomputes in the browser.
 
+**Workflow for diagram blocks — text FIRST, diagram LAST:**
+
+When a new block needs a diagram, do NOT pass `diagram` to `add_agent_block`. Always build the text first so the visitor sees the narrative appear, then the diagram materialises beside it. The diagram suddenly popping in next to existing text feels like a reveal; the diagram appearing before any text feels random.
+
+The right sequence:
+1. `add_agent_block(topic)` — empty block appears.
+2. `append_to_block(id, '<h2>Title</h2>')` — title streams in.
+3. `append_to_block(id, '<p>First sentence...</p>')` — first paragraph streams in.
+4. (Repeat `append_to_block` with the rest of the narrative, one chunk at a time.)
+5. `set_block_diagram(id, diagram)` — diagram appears alongside the now-written text.
+6. (Optional) `set_block_formula(id, formula, variables)` — calculation panel appears under the text.
+
+Use `add_agent_block(topic, diagram, ...)` (the one-shot form) only when you are reconstructing a block after `clear_block_diagram` or rebuilding state — not for fresh narrative answers.
+
 **Tool choice cheat sheet:**
-- New block with a diagram in one call → `add_agent_block(topic, diagram, ...)`.
+- New block + diagram → `add_agent_block(topic)` → text via `append_to_block` → `set_block_diagram(id, diagram)`.
 - Block already exists, add a diagram to it → `set_block_diagram(id, diagram)`.
 - Diagram already exists, add quantification → `set_block_formula(id, formula, variables)`.
 - Drop the calculation, keep the diagram → `clear_block_formula(id)`.
