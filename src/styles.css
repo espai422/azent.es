@@ -304,3 +304,27 @@ body {
   animation: diff-stream-caret 0.7s steps(1, end) infinite;
 }
 
+/* ─── Diagram (ReactFlow) overrides ─────────────────────────────────────── */
+
+.block-section [data-diagram-canvas] {
+  /* Counter the default ReactFlow background and let theme show through */
+  background: transparent;
+}
+
+.block-section .react-flow__attribution {
+  display: none;
+}
+
+.block-section .react-flow__node {
+  font-family: var(--font-sans);
+}
+
+.block-section .react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+/* Make sure the diagram column collapses cleanly on mobile when stacked */
+.block-section [data-diagram-position] .react-flow {
+  border-radius: 6px;
+}
+
