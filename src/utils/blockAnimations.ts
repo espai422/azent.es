@@ -48,3 +48,19 @@ export function cubicBezier(
     return sampleY(tForX(x))
   }
 }
+
+export const SPRING_EASING = cubicBezier(0.34, 1.25, 0.4, 1)
+
+export const DURATIONS = {
+  scrollInsertion: 600,
+  scrollFocus: 600,
+  revealSymmetric: 500,
+  streamingHeight: 250,
+} as const
+
+export function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false
+  }
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}

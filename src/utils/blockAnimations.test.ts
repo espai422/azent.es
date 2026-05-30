@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { cubicBezier } from './blockAnimations'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion } from './blockAnimations'
 
 describe('cubicBezier', () => {
   it('returns 0 at x=0 and 1 at x=1 for any control points', () => {
@@ -28,5 +28,38 @@ describe('cubicBezier', () => {
     const ease = cubicBezier(0.34, 1.25, 0.4, 1)
     expect(ease(-0.5)).toBe(0)
     expect(ease(1.5)).toBe(1)
+  })
+})
+
+describe('SPRING_EASING', () => {
+  it('peaks above 1 around x=0.6 (spring overshoot)', () => {
+    expect(SPRING_EASING(0.6)).toBeGreaterThan(1)
+  })
+})
+
+describe('DURATIONS', () => {
+  it('exposes positive integer durations for all named animations', () => {
+    expect(DURATIONS.scrollInsertion).toBeGreaterThan(0)
+    expect(DURATIONS.scrollFocus).toBeGreaterThan(0)
+    expect(DURATIONS.revealSymmetric).toBeGreaterThan(0)
+    expect(DURATIONS.streamingHeight).toBeGreaterThan(0)
+  })
+})
+
+describe('prefersReducedMotion', () => {
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('returns false when the media query does not match', () => {
+    expect(prefersReducedMotion()).toBe(false)
+  })
+
+  it('returns true when the media query matches', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    expect(prefersReducedMotion()).toBe(true)
   })
 })
