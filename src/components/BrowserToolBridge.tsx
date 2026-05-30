@@ -110,6 +110,7 @@ export function BrowserToolBridge() {
   const { sections, addSection, updateSection, removeSection } = useSections()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const sectionsRef = useRef(sections)
+  const lastTouchedIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     sectionsRef.current = sections
@@ -117,6 +118,7 @@ export function BrowserToolBridge() {
 
   const tools = useMemo(() => {
     async function scrollIntoViewIfNeeded(id: string) {
+      if (lastTouchedIdRef.current === id) return
       const element = document.getElementById(id)
       if (!element) return
       const rect = element.getBoundingClientRect()
@@ -164,6 +166,7 @@ export function BrowserToolBridge() {
         ],
         { duration: 1_200, easing: 'ease-out' },
       )
+      lastTouchedIdRef.current = id
       return { id }
     },
 
@@ -229,6 +232,7 @@ export function BrowserToolBridge() {
         )
         await new Promise(resolve => setTimeout(resolve, 300))
       }
+      lastTouchedIdRef.current = newId
       return { id: newId }
     },
 
@@ -243,6 +247,7 @@ export function BrowserToolBridge() {
       const existing = stripFlashSpans(section.content)
       const appended = wrapAllTextAsFlash(html)
       updateSection(id, { content: existing + appended })
+      lastTouchedIdRef.current = id
       return { id }
     },
 
@@ -271,6 +276,7 @@ export function BrowserToolBridge() {
           { duration: 400, easing: 'ease-out' },
         )
       }, 0)
+      lastTouchedIdRef.current = id
       return { id, updated: true }
     },
 
@@ -280,6 +286,7 @@ export function BrowserToolBridge() {
       if (!id) throw new Error('id is required')
       if (!sectionsRef.current.find(s => s.id === id)) throw new Error(`Section not found: ${id}`)
       removeSection(id)
+      if (lastTouchedIdRef.current === id) lastTouchedIdRef.current = null
       return { id, removed: true }
     },
 
@@ -296,17 +303,10 @@ export function BrowserToolBridge() {
       } else if (!section.diagramPosition) {
         updates.diagramPosition = 'after'
       }
-      const element = document.getElementById(id)
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
-        if (!isInView) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          await new Promise(resolve => setTimeout(resolve, 380))
-        }
-      }
+      await scrollIntoViewIfNeeded(id)
       updateSection(id, updates)
       flashBlockOutline(id)
+      lastTouchedIdRef.current = id
       return { id, updated: true }
     },
 
@@ -322,17 +322,10 @@ export function BrowserToolBridge() {
       const formula = readString(args.formula).trim()
       if (!formula) throw new Error('formula is required')
       const variables = readVariables(args.variables)
-      const element = document.getElementById(id)
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
-        if (!isInView) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          await new Promise(resolve => setTimeout(resolve, 380))
-        }
-      }
+      await scrollIntoViewIfNeeded(id)
       updateSection(id, { formula, variables })
       flashBlockOutline(id)
+      lastTouchedIdRef.current = id
       return { id, updated: true }
     },
 

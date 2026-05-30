@@ -96,18 +96,24 @@ export function PromptBar() {
               )}
               <span className="shrink-0 font-medium text-zinc-100">{statusLabel}</span>
               <span className="mt-1 h-3 w-px shrink-0 bg-white/15" aria-hidden="true" />
-              <span className="line-clamp-2 min-w-0 whitespace-pre-wrap break-words sm:line-clamp-3">{lastPrompt}</span>
+              <span className="line-clamp-1 min-w-0 whitespace-pre-wrap break-words sm:line-clamp-3">{lastPrompt}</span>
             </div>
             {activities.length > 0 && (
-              <div className="pointer-events-auto flex max-h-36 w-full max-w-2xl flex-col gap-1 overflow-y-auto rounded-2xl border border-white/10 bg-zinc-950/82 p-2 text-xs text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl">
-                {activities.slice(-6).map((activity) => (
-                  <div key={activity.id} className="flex items-center gap-2 rounded-xl px-2 py-1.5">
-                    {activity.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />}
-                    {activity.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden="true" />}
-                    {activity.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-300" aria-hidden="true" />}
-                    <span className="min-w-0 truncate">{activity.label}</span>
-                  </div>
-                ))}
+              <div className="pointer-events-auto flex w-full max-w-2xl flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-950/82 p-2 text-xs text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl sm:max-h-36 sm:overflow-y-auto">
+                {activities.slice(-6).map((activity, idx, arr) => {
+                  const isLast = idx === arr.length - 1
+                  return (
+                    <div
+                      key={activity.id}
+                      className={`${isLast ? 'flex' : 'hidden sm:flex'} items-center gap-2 rounded-xl px-2 py-1.5`}
+                    >
+                      {activity.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />}
+                      {activity.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden="true" />}
+                      {activity.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-300" aria-hidden="true" />}
+                      <span className="min-w-0 truncate">{activity.label}</span>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

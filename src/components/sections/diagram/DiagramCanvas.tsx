@@ -24,19 +24,17 @@ const HANDLE_STYLE = {
   opacity: 0,
 } as const
 
-function AzentNode({ data, selected }: NodeProps<Node<AzentNodeData>>) {
+function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
   return (
     <div
       style={{
         background: 'transparent',
-        border: `1px solid ${selected ? 'var(--prose-accent)' : 'var(--prose-muted)'}`,
+        border: '1px solid var(--prose-muted)',
         borderRadius: 8,
         padding: '12px 18px',
         minWidth: 110,
         textAlign: 'center',
-        cursor: 'grab',
         userSelect: 'none',
-        transition: 'border-color 180ms ease',
         fontFamily: 'var(--font-sans)',
       }}
     >
@@ -189,8 +187,8 @@ function toRFEdges(defs: DiagramEdgeDef[], nodes: DiagramNodeDef[]): Edge[] {
 }
 
 function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(toRFNodes(data.nodes))
-  const [edges, setEdges, onEdgesChange] = useEdgesState(toRFEdges(data.edges, data.nodes))
+  const [nodes, setNodes] = useNodesState(toRFNodes(data.nodes))
+  const [edges, setEdges] = useEdgesState(toRFEdges(data.edges, data.nodes))
 
   useEffect(() => {
     setNodes(toRFNodes(data.nodes))
@@ -201,12 +199,19 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
     <ReactFlow
       nodes={nodes}
       edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
+      nodesDraggable={false}
       nodesConnectable={false}
+      nodesFocusable={false}
       edgesFocusable={false}
+      elementsSelectable={false}
+      panOnDrag={false}
+      panOnScroll={false}
+      zoomOnScroll={false}
+      zoomOnPinch={false}
+      zoomOnDoubleClick={false}
+      preventScrolling={false}
       deleteKeyCode={null}
       fitView
       fitViewOptions={{ padding: 0.2 }}
