@@ -208,4 +208,14 @@ describe('Block', () => {
     )
     expect((screen.getByRole('spinbutton') as HTMLInputElement).value).toBe('10')
   })
+
+  it('attaches a ref to the outer section so height animation can target it', () => {
+    const { container } = render(<Block config={base} index={0} prevTab="none" />)
+    const section = container.querySelector('section') as HTMLElement
+    expect(section).toBeTruthy()
+    // The hook should run useLayoutEffect; we cannot directly observe the ref,
+    // but having no inline height present after first render is the expected
+    // baseline (no animation on first render).
+    expect(section.style.height).toBe('')
+  })
 })

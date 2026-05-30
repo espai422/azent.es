@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SectionConfig, TabVariant } from './SectionContext'
 import { streamFlashSpansIn } from '#/utils/streamFlash'
+import { useAnimatedHeight } from './useAnimatedHeight'
 import { DiagramCanvas } from './diagram/DiagramCanvas'
 import { DiagramVariables } from './diagram/DiagramVariables'
 import { DiagramCalculo } from './diagram/DiagramCalculo'
@@ -23,16 +24,20 @@ export function Block({ config, index, prevTab }: BlockProps) {
   const clipPath = CLIP_BOTTOM[config.tab] || undefined
   const marginTop = index === 0 || prevTab === 'none' ? 0 : -12
   const contentRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (contentRef.current) streamFlashSpansIn(contentRef.current)
   }, [config.content])
+
+  useAnimatedHeight(sectionRef, config.content)
 
   const hasDiagram = !!config.diagram
   const position = config.diagramPosition ?? 'after'
 
   return (
     <section
+      ref={sectionRef}
       id={config.id}
       data-theme={config.theme}
       data-tab={config.tab}
