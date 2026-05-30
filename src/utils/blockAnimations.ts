@@ -117,3 +117,17 @@ export function smoothScrollTo(
     rafId = requestAnimationFrame(tick)
   })
 }
+
+export function scrollSoPointAt(
+  pageY: number,
+  viewportRatio: number,
+  durationMs: number,
+  signal?: AbortSignal,
+): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve()
+  const viewport = window.innerHeight
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - viewport)
+  const raw = pageY - viewport * viewportRatio
+  const target = Math.max(0, Math.min(maxScroll, raw))
+  return smoothScrollTo(target, durationMs, signal)
+}

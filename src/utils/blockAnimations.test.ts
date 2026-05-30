@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo } from './blockAnimations'
+import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt } from './blockAnimations'
 
 describe('cubicBezier', () => {
   it('returns 0 at x=0 and 1 at x=1 for any control points', () => {
@@ -118,5 +118,44 @@ describe('smoothScrollTo', () => {
     currentScrollY = 250
     await smoothScrollTo(250, 500)
     expect(scrollToCalls.length).toBe(0)
+  })
+})
+
+describe('scrollSoPointAt', () => {
+  let scrollToCalls: Array<{ top: number }>
+  let currentScrollY: number
+  beforeEach(() => {
+    scrollToCalls = []
+    currentScrollY = 0
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true })) // skip RAF
+    vi.stubGlobal('scrollTo', (opts: ScrollToOptions) => {
+      scrollToCalls.push({ top: opts.top ?? 0 })
+      currentScrollY = opts.top ?? 0
+    })
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => currentScrollY })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800, writable: true })
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      configurable: true, value: 10_000, writable: true,
+    })
+  })
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it('targets pageY - innerHeight*ratio (point lands at ratio of viewport)', async () => {
+    await scrollSoPointAt(1000, 0.4, 0)
+    // 1000 - (800 * 0.4) = 1000 - 320 = 680
+    expect(scrollToCalls.at(-1)?.top).toBe(680)
+  })
+
+  it('clamps the target below zero to zero', async () => {
+    currentScrollY = 500 // Start at a non-zero position
+    await scrollSoPointAt(100, 0.5, 0)
+    // 100 - 400 = -300 → clamp to 0
+    expect(scrollToCalls.at(-1)?.top).toBe(0)
+  })
+
+  it('clamps the target above maxScroll to maxScroll', async () => {
+    // maxScroll = scrollHeight - innerHeight = 10000 - 800 = 9200
+    await scrollSoPointAt(20_000, 0.5, 0)
+    expect(scrollToCalls.at(-1)?.top).toBe(9200)
   })
 })
