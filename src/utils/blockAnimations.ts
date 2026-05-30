@@ -64,3 +64,56 @@ export function prefersReducedMotion(): boolean {
   }
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
+
+export function smoothScrollTo(
+  targetY: number,
+  durationMs: number,
+  signal?: AbortSignal,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve()
+      return
+    }
+    const startY = window.scrollY
+    const delta = targetY - startY
+    if (delta === 0) {
+      resolve()
+      return
+    }
+    if (prefersReducedMotion() || durationMs <= 0) {
+      window.scrollTo({ top: targetY, behavior: 'auto' })
+      resolve()
+      return
+    }
+
+    const startTime = performance.now()
+    let rafId = 0
+    let done = false
+
+    const finish = () => {
+      if (done) return
+      done = true
+      cancelAnimationFrame(rafId)
+      signal?.removeEventListener('abort', onAbort)
+      resolve()
+    }
+
+    const onAbort = () => finish()
+    signal?.addEventListener('abort', onAbort)
+
+    const tick = (now: number) => {
+      if (done) return
+      if (signal?.aborted) { finish(); return }
+      const elapsed = now - startTime
+      const t = Math.min(1, elapsed / durationMs)
+      const eased = SPRING_EASING(t)
+      const y = startY + delta * eased
+      window.scrollTo({ top: y, behavior: 'auto' })
+      if (t >= 1) { finish(); return }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+  })
+}
