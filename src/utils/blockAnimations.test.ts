@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt } from './blockAnimations'
+import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt, scrollSoElementFocused } from './blockAnimations'
 
 describe('cubicBezier', () => {
   it('returns 0 at x=0 and 1 at x=1 for any control points', () => {
@@ -157,5 +157,47 @@ describe('scrollSoPointAt', () => {
     // maxScroll = scrollHeight - innerHeight = 10000 - 800 = 9200
     await scrollSoPointAt(20_000, 0.5, 0)
     expect(scrollToCalls.at(-1)?.top).toBe(9200)
+  })
+})
+
+describe('scrollSoElementFocused', () => {
+  let scrollToCalls: Array<{ top: number }>
+  beforeEach(() => {
+    scrollToCalls = []
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    vi.stubGlobal('scrollTo', (opts: ScrollToOptions) => {
+      scrollToCalls.push({ top: opts.top ?? 0 })
+    })
+    let scrollY = 0
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => scrollY })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800, writable: true })
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      configurable: true, value: 10_000, writable: true,
+    })
+  })
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  function makeElement(top: number, height: number): HTMLElement {
+    const el = document.createElement('section')
+    el.getBoundingClientRect = () => ({
+      top, height, bottom: top + height,
+      left: 0, right: 100, width: 100, x: 0, y: top,
+      toJSON() { return {} },
+    }) as DOMRect
+    return el
+  }
+
+  it('centres an element that fits in the viewport (ratio 0.5)', async () => {
+    const el = makeElement(900, 400) // pageY = 900 + scrollY(0) = 900; centre Y = 1100
+    await scrollSoElementFocused(el, 0)
+    // 1100 - 400 = 700
+    expect(scrollToCalls.at(-1)?.top).toBe(700)
+  })
+
+  it('puts the top at ratio 0.2 when the element is taller than the viewport', async () => {
+    const el = makeElement(500, 1200) // taller than 800
+    await scrollSoElementFocused(el, 0)
+    // top page Y = 500; target = 500 - 800*0.2 = 500 - 160 = 340
+    expect(scrollToCalls.at(-1)?.top).toBe(340)
   })
 })

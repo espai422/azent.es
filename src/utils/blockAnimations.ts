@@ -131,3 +131,20 @@ export function scrollSoPointAt(
   const target = Math.max(0, Math.min(maxScroll, raw))
   return smoothScrollTo(target, durationMs, signal)
 }
+
+export function scrollSoElementFocused(
+  element: HTMLElement,
+  durationMs: number,
+  signal?: AbortSignal,
+): Promise<void> {
+  if (typeof window === 'undefined') return Promise.resolve()
+  const rect = element.getBoundingClientRect()
+  if (rect.height === 0) return Promise.resolve()
+  const viewport = window.innerHeight
+  const topPageY = rect.top + window.scrollY
+  if (rect.height <= viewport) {
+    const centrePageY = topPageY + rect.height / 2
+    return scrollSoPointAt(centrePageY, 0.5, durationMs, signal)
+  }
+  return scrollSoPointAt(topPageY, 0.2, durationMs, signal)
+}
