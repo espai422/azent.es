@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { DURATIONS, scrollSoElementFocused } from '#/utils/blockAnimations'
+import {
+  DURATIONS,
+  scrollSoPointAt,
+  scrollSoElementFocused,
+  revealBlockSymmetric,
+} from '#/utils/blockAnimations'
 import { useSections, type SectionInput } from '#/components/sections'
 import type { DiagramJSON } from '#/components/sections'
 import { createId } from '#/utils/id'
@@ -194,43 +199,38 @@ export function BrowserToolBridge() {
       }
 
       const pinnedSection = sectionsRef.current.find(s => s.pinned)
+      let boundaryY: number
       if (pinnedSection) {
         const pinnedEl = document.getElementById(pinnedSection.id)
-        if (pinnedEl) {
-          pinnedEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          await new Promise(resolve => setTimeout(resolve, 380))
-        }
+        boundaryY = pinnedEl
+          ? pinnedEl.getBoundingClientRect().top + window.scrollY
+          : document.documentElement.scrollHeight
       } else {
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
-        await new Promise(resolve => setTimeout(resolve, 380))
+        boundaryY = document.documentElement.scrollHeight
       }
+      await scrollSoPointAt(boundaryY, 0.40, DURATIONS.scrollInsertion)
 
       const newId = createId()
       addSection({ id: newId, content: '', topic, className: 'agent-block', ...optional })
-      await new Promise<void>(resolve => { requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) }) })
+      await new Promise<void>(resolve => {
+        requestAnimationFrame(() => { requestAnimationFrame(() => resolve()) })
+      })
+
       const element = document.getElementById(newId)
       if (element) {
-        element.style.height = '0px'
-        element.style.minHeight = '0px'
-        element.style.overflow = 'hidden'
-        const revealAnim = element.animate(
-          [{ height: '0px' }, { height: '280px' }],
-          { duration: 350, easing: 'cubic-bezier(0.2, 0, 0, 1)', fill: 'forwards' },
-        )
-        await revealAnim.finished
-        revealAnim.cancel()
-        element.style.removeProperty('height')
-        element.style.removeProperty('min-height')
-        element.style.removeProperty('overflow')
+        const measured = element.scrollHeight
+        const naturalHeight = measured === 0
+          ? 200
+          : Math.min(measured, Math.round(window.innerHeight * 0.7))
+        await revealBlockSymmetric(element, naturalHeight, DURATIONS.revealSymmetric)
         element.animate(
           [
             { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
             { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.9)', outlineOffset: '-10px' },
             { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
           ],
-          { duration: 300, easing: 'ease-out' },
+          { duration: 600, easing: 'ease-out' },
         )
-        await new Promise(resolve => setTimeout(resolve, 300))
       }
       lastTouchedIdRef.current = newId
       return { id: newId }
