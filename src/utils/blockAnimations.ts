@@ -148,3 +148,61 @@ export function scrollSoElementFocused(
   }
   return scrollSoPointAt(topPageY, 0.2, durationMs, signal)
 }
+
+export function revealBlockSymmetric(
+  element: HTMLElement,
+  finalHeight: number,
+  durationMs: number,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (typeof window === 'undefined' || finalHeight <= 0) {
+      resolve()
+      return
+    }
+    const startScrollY = window.scrollY
+    const targetScrollY = Math.max(0, startScrollY - finalHeight / 2)
+
+    if (prefersReducedMotion() || durationMs <= 0) {
+      element.style.height = ''
+      element.style.minHeight = ''
+      element.style.overflow = ''
+      window.scrollTo({ top: targetScrollY, behavior: 'auto' })
+      resolve()
+      return
+    }
+
+    element.style.height = '0px'
+    element.style.minHeight = '0px'
+    element.style.overflow = 'hidden'
+
+    const startTime = performance.now()
+    let rafId = 0
+    let done = false
+
+    const finish = () => {
+      if (done) return
+      done = true
+      cancelAnimationFrame(rafId)
+      element.style.height = ''
+      element.style.minHeight = ''
+      element.style.overflow = ''
+      resolve()
+    }
+
+    const tick = (now: number) => {
+      if (done) return
+      const elapsed = now - startTime
+      const t = Math.min(1, elapsed / durationMs)
+      const eased = SPRING_EASING(t)
+      // Height clamped to [0, finalHeight] in case the spring overshoots.
+      const heightValue = Math.max(0, Math.min(finalHeight, finalHeight * eased))
+      element.style.height = `${heightValue}px`
+      const scrollValue = startScrollY + (targetScrollY - startScrollY) * eased
+      window.scrollTo({ top: scrollValue, behavior: 'auto' })
+      if (t >= 1) { finish(); return }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+  })
+}

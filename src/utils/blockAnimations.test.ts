@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt, scrollSoElementFocused } from './blockAnimations'
+import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt, scrollSoElementFocused, revealBlockSymmetric } from './blockAnimations'
 
 describe('cubicBezier', () => {
   it('returns 0 at x=0 and 1 at x=1 for any control points', () => {
@@ -199,5 +199,58 @@ describe('scrollSoElementFocused', () => {
     await scrollSoElementFocused(el, 0)
     // top page Y = 500; target = 500 - 800*0.2 = 500 - 160 = 340
     expect(scrollToCalls.at(-1)?.top).toBe(340)
+  })
+})
+
+describe('revealBlockSymmetric', () => {
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    let scrollY = 1000
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => scrollY })
+    vi.stubGlobal('scrollTo', (opts: ScrollToOptions) => {
+      scrollY = opts.top ?? 0
+    })
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('ends with the element at its target height and scrollY shifted by -finalHeight/2', async () => {
+    const el = document.createElement('section')
+    document.body.appendChild(el)
+    const promise = revealBlockSymmetric(el, 300, 200)
+    // Step the timers past duration.
+    await vi.advanceTimersByTimeAsync(400)
+    await promise
+
+    expect(el.style.height).toBe('') // cleared after finish
+    expect(el.style.overflow).toBe('')
+    expect(window.scrollY).toBe(1000 - 150)
+    el.remove()
+  })
+
+  it('jumps to final state when reduced motion is on', async () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    const el = document.createElement('section')
+    document.body.appendChild(el)
+    await revealBlockSymmetric(el, 300, 500)
+    expect(window.scrollY).toBe(850) // 1000 - 150
+    el.remove()
+  })
+
+  it('starts with the element at height:0 + overflow:hidden during animation', async () => {
+    const el = document.createElement('section')
+    document.body.appendChild(el)
+    const promise = revealBlockSymmetric(el, 300, 200)
+    // Advance enough to enter the loop but not finish.
+    await vi.advanceTimersByTimeAsync(20)
+    expect(el.style.overflow).toBe('hidden')
+    expect(parseFloat(el.style.height || '0')).toBeGreaterThanOrEqual(0)
+    expect(parseFloat(el.style.height || '0')).toBeLessThan(300)
+    await vi.advanceTimersByTimeAsync(400)
+    await promise
+    el.remove()
   })
 })
