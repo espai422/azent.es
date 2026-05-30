@@ -18,14 +18,14 @@ export function cubicBezier(
 
   const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t
   const sampleY = (t: number) => ((ay * t + by) * t + cy) * t
-  const dx = (t: number) => (3 * ax * t + 2 * bx) * t + cx
+  const derivativeX = (t: number) => (3 * ax * t + 2 * bx) * t + cx
 
   function tForX(x: number): number {
     let t = x
     for (let i = 0; i < 8; i++) {
       const xt = sampleX(t) - x
       if (Math.abs(xt) < 1e-6) return t
-      const slope = dx(t)
+      const slope = derivativeX(t)
       if (Math.abs(slope) < 1e-6) break
       t -= xt / slope
     }
