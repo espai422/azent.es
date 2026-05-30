@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { DURATIONS, scrollSoElementFocused } from '#/utils/blockAnimations'
 import { useSections, type SectionInput } from '#/components/sections'
 import type { DiagramJSON } from '#/components/sections'
 import { createId } from '#/utils/id'
@@ -117,15 +118,14 @@ export function BrowserToolBridge() {
   }, [sections])
 
   const tools = useMemo(() => {
-    async function scrollIntoViewIfNeeded(id: string) {
+    async function focusBlockIfNeeded(id: string) {
       if (lastTouchedIdRef.current === id) return
       const element = document.getElementById(id)
       if (!element) return
       const rect = element.getBoundingClientRect()
-      const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
-      if (isInView) return
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      await new Promise(resolve => setTimeout(resolve, 380))
+      const fullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
+      if (fullyVisible) return
+      await scrollSoElementFocused(element, DURATIONS.scrollFocus)
     }
 
     return {
@@ -243,7 +243,7 @@ export function BrowserToolBridge() {
       if (!id || !html) throw new Error('id and html are required')
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
-      await scrollIntoViewIfNeeded(id)
+      await focusBlockIfNeeded(id)
       const existing = stripFlashSpans(section.content)
       const appended = wrapAllTextAsFlash(html)
       updateSection(id, { content: existing + appended })
@@ -258,7 +258,7 @@ export function BrowserToolBridge() {
       if (!id || !html) throw new Error('id and html are required')
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
-      await scrollIntoViewIfNeeded(id)
+      await focusBlockIfNeeded(id)
       const annotated = diffHtml(section.content, html)
       const updates: Partial<SectionInput> = { content: annotated }
       if (typeof args.topic === 'string' && args.topic.trim()) {
@@ -303,7 +303,7 @@ export function BrowserToolBridge() {
       } else if (!section.diagramPosition) {
         updates.diagramPosition = 'after'
       }
-      await scrollIntoViewIfNeeded(id)
+      await focusBlockIfNeeded(id)
       updateSection(id, updates)
       flashBlockOutline(id)
       lastTouchedIdRef.current = id
@@ -322,7 +322,7 @@ export function BrowserToolBridge() {
       const formula = readString(args.formula).trim()
       if (!formula) throw new Error('formula is required')
       const variables = readVariables(args.variables)
-      await scrollIntoViewIfNeeded(id)
+      await focusBlockIfNeeded(id)
       updateSection(id, { formula, variables })
       flashBlockOutline(id)
       lastTouchedIdRef.current = id
