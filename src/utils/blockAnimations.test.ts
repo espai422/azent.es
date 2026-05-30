@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt, scrollSoElementFocused, revealBlockSymmetric } from './blockAnimations'
+import { cubicBezier, DURATIONS, SPRING_EASING, prefersReducedMotion, smoothScrollTo, scrollSoPointAt, scrollSoElementFocused, revealBlockSymmetric, animateHeightChange } from './blockAnimations'
 
 describe('cubicBezier', () => {
   it('returns 0 at x=0 and 1 at x=1 for any control points', () => {
@@ -199,6 +199,52 @@ describe('scrollSoElementFocused', () => {
     await scrollSoElementFocused(el, 0)
     // top page Y = 500; target = 500 - 800*0.2 = 500 - 160 = 340
     expect(scrollToCalls.at(-1)?.top).toBe(340)
+  })
+})
+
+describe('animateHeightChange', () => {
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('ends with height equal to the target (inline cleared)', async () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    const promise = animateHeightChange(el, 100, 300, 200)
+    await vi.advanceTimersByTimeAsync(400)
+    await promise
+    expect(el.style.height).toBe('')
+    el.remove()
+  })
+
+  it('jumps instantly when reduced motion is on', async () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    await animateHeightChange(el, 100, 300, 500)
+    expect(el.style.height).toBe('') // cleared so layout uses natural height
+    el.remove()
+  })
+
+  it('starting a new animation while one is in flight cancels the first and resumes from current', async () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    const first = animateHeightChange(el, 100, 500, 400)
+    await vi.advanceTimersByTimeAsync(100)
+    const heightMidFirst = parseFloat(el.style.height || '0')
+    expect(heightMidFirst).toBeGreaterThan(100)
+    expect(heightMidFirst).toBeLessThan(500)
+
+    const second = animateHeightChange(el, heightMidFirst, 800, 300)
+    await vi.advanceTimersByTimeAsync(500)
+    await Promise.all([first, second])
+    expect(el.style.height).toBe('')
+    el.remove()
   })
 })
 

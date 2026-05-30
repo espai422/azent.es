@@ -149,6 +149,59 @@ export function scrollSoElementFocused(
   return scrollSoPointAt(topPageY, 0.2, durationMs, signal)
 }
 
+const activeHeightAnimations = new WeakMap<HTMLElement, () => void>()
+
+export function animateHeightChange(
+  element: HTMLElement,
+  fromHeight: number,
+  toHeight: number,
+  durationMs: number,
+): Promise<void> {
+  // Cancel any prior animation on this element.
+  activeHeightAnimations.get(element)?.()
+
+  return new Promise<void>((resolve) => {
+    if (fromHeight === toHeight) {
+      element.style.height = ''
+      resolve()
+      return
+    }
+    if (typeof window === 'undefined' || prefersReducedMotion() || durationMs <= 0) {
+      element.style.height = ''
+      resolve()
+      return
+    }
+
+    const startTime = performance.now()
+    let rafId = 0
+    let done = false
+
+    const finish = () => {
+      if (done) return
+      done = true
+      cancelAnimationFrame(rafId)
+      activeHeightAnimations.delete(element)
+      element.style.height = ''
+      resolve()
+    }
+
+    activeHeightAnimations.set(element, finish)
+
+    const tick = (now: number) => {
+      if (done) return
+      const elapsed = now - startTime
+      const t = Math.min(1, elapsed / durationMs)
+      const eased = SPRING_EASING(t)
+      const value = fromHeight + (toHeight - fromHeight) * eased
+      element.style.height = `${Math.max(0, value)}px`
+      if (t >= 1) { finish(); return }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    rafId = requestAnimationFrame(tick)
+  })
+}
+
 export function revealBlockSymmetric(
   element: HTMLElement,
   finalHeight: number,
