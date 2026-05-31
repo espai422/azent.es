@@ -14,7 +14,13 @@ let state: State = { kind: 'idle' }
 let suppressed = false
 
 function onScroll(): void {
-  // Implemented in Task 4.
+  if (state.kind !== 'engaged') return
+  if (suppressed) { suppressed = false; return }
+  if (Math.abs(window.scrollY - state.lastScrollY) > OPT_OUT_PX) {
+    window.cancelAnimationFrame(state.rafId)
+    window.removeEventListener('scroll', onScroll)
+    state = { kind: 'optedOut', blockId: state.blockId }
+  }
 }
 
 function tick(): void {
@@ -46,6 +52,7 @@ function setIdle(): void {
     window.cancelAnimationFrame(state.rafId)
   }
   window.removeEventListener('scroll', onScroll)
+  suppressed = false
   state = { kind: 'idle' }
 }
 
@@ -83,6 +90,3 @@ export function disengageStreamingAutoscroll(): void {
 export function _getStateForTests(): State {
   return state
 }
-
-// Silence unused-import linter until later tasks wire them in.
-void OPT_OUT_PX

@@ -180,3 +180,81 @@ describe('streamingAutoscroll — idle timeout', () => {
     expect(_getStateForTests().kind).toBe('engaged')
   })
 })
+
+describe('streamingAutoscroll — opt-out detection', () => {
+  let rafCallback: FrameRequestCallback | null
+  let scrollListener: EventListener | null
+  let currentScrollY: number
+
+  function makeBlock(id: string, bottom: number): HTMLElement {
+    const el = document.createElement('section')
+    el.id = id
+    el.getBoundingClientRect = () => ({
+      top: 0, bottom, height: bottom, left: 0, right: 100, width: 100, x: 0, y: 0,
+      toJSON() { return {} },
+    }) as DOMRect
+    document.body.appendChild(el)
+    return el
+  }
+
+  beforeEach(() => {
+    rafCallback = null
+    scrollListener = null
+    currentScrollY = 0
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      rafCallback = cb
+      return 1
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.stubGlobal('scrollTo', (opts: ScrollToOptions) => {
+      currentScrollY = opts.top ?? 0
+    })
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => currentScrollY })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1000, writable: true })
+    // Capture the scroll listener registered by engage().
+    const origAdd = window.addEventListener.bind(window)
+    vi.spyOn(window, 'addEventListener').mockImplementation((type, listener, opts) => {
+      if (type === 'scroll') scrollListener = listener as EventListener
+      else origAdd(type, listener, opts)
+    })
+    disengageStreamingAutoscroll()
+  })
+  afterEach(() => {
+    document.querySelectorAll('section').forEach(el => el.remove())
+    disengageStreamingAutoscroll()
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  it('transitions to optedOut when user scroll diverges > 150 px from lastScrollY', () => {
+    makeBlock('block-a', 500) // no overflow → tick will not set lastScrollY
+    engageStreamingAutoscroll('block-a')
+    // lastScrollY at engage = window.scrollY = 0
+    currentScrollY = 200 // user scrolled 200 px away
+    scrollListener?.(new Event('scroll'))
+    const s = _getStateForTests()
+    expect(s.kind).toBe('optedOut')
+    if (s.kind === 'optedOut') expect(s.blockId).toBe('block-a')
+  })
+
+  it('does NOT opt out when user scroll is within 150 px of lastScrollY', () => {
+    makeBlock('block-a', 500)
+    engageStreamingAutoscroll('block-a')
+    currentScrollY = 100 // within tolerance
+    scrollListener?.(new Event('scroll'))
+    expect(_getStateForTests().kind).toBe('engaged')
+  })
+
+  it('does NOT opt out from a scroll event that immediately follows our own scrollTo (suppressed)', () => {
+    makeBlock('block-a', 1500) // overflow = 600 → tick scrolls to scrollY+150
+    engageStreamingAutoscroll('block-a')
+    rafCallback?.(0)              // this tick calls scrollTo (currentScrollY → 150) and sets suppressed=true
+    scrollListener?.(new Event('scroll')) // first event = ours, suppressed consumed
+    expect(_getStateForTests().kind).toBe('engaged')
+    // A SECOND event with no further programmatic scrolls counts as user input.
+    currentScrollY = 500 // user scrolls way off
+    scrollListener?.(new Event('scroll'))
+    expect(_getStateForTests().kind).toBe('optedOut')
+  })
+})
