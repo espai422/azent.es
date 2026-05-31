@@ -209,7 +209,7 @@ export function BrowserToolBridge() {
       } else {
         boundaryY = document.documentElement.scrollHeight
       }
-      await scrollSoPointAt(boundaryY, 0.40, DURATIONS.scrollInsertion)
+      await scrollSoPointAt(boundaryY, 0.10, DURATIONS.scrollInsertion)
 
       const newId = createId()
       addSection({ id: newId, content: '', topic, className: 'agent-block', ...optional })
