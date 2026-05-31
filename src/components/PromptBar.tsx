@@ -22,9 +22,14 @@ export function PromptBar() {
   const [status, setStatus] = useState<PromptStatus>('idle')
   const [browserSessionId, setBrowserSessionId] = useState('')
   const [activities, setActivities] = useState<Activity[]>([])
+  const [hasMounted, setHasMounted] = useState(false)
+  const [lockedWidth, setLockedWidth] = useState<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const canSubmit = prompt.trim().length > 0 && status !== 'sending' && browserSessionId.length > 0
+  const visible = hasMounted && status !== 'sending'
+  const canSubmit =
+    prompt.trim().length > 0 && status !== 'sending' && browserSessionId.length > 0 && visible
 
   useEffect(() => {
     setBrowserSessionId(window.sessionStorage.getItem('azent.browserSessionId') || '')
@@ -36,6 +41,21 @@ export function PromptBar() {
 
     window.addEventListener('azent:browser-session', handleBrowserSession)
     return () => window.removeEventListener('azent:browser-session', handleBrowserSession)
+  }, [])
+
+  useEffect(() => {
+    const t = setTimeout(() => setHasMounted(true), 500)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    const node = containerRef.current
+    if (!node) return
+    const update = () => setLockedWidth(node.clientWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(node)
+    return () => ro.disconnect()
   }, [])
 
   function resizeTextarea() {
@@ -85,7 +105,7 @@ export function PromptBar() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[2147483647] px-3 pb-3 sm:px-6 sm:pb-5">
-      <div className="mx-auto w-full max-w-3xl">
+      <div ref={containerRef} className="mx-auto w-full max-w-3xl">
         {lastPrompt && (
           <div className="mb-2 flex flex-col items-center gap-2">
             <div className="pointer-events-auto flex max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-zinc-950/85 px-3 py-2 text-xs leading-5 text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl">
@@ -119,60 +139,73 @@ export function PromptBar() {
           </div>
         )}
 
-        <form
-          className={`pointer-events-auto rounded-2xl border border-white/12 bg-neutral-950/88 p-1.5 shadow-[0_18px_70px_rgba(0,0,0,0.48)] backdrop-blur-2xl sm:rounded-[1.4rem] sm:p-2 ${status === 'sending' ? 'hidden sm:block' : ''}`}
-          autoComplete="off"
-          onSubmit={(event) => void handleSubmit(event)}
-        >
-          <div className="flex items-end gap-1.5 sm:gap-2">
-            <textarea
-              ref={textareaRef}
-              aria-label="Prompt para modificar la web"
-              aria-autocomplete="none"
-              className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] leading-5 text-white outline-none placeholder:text-zinc-500 sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm sm:leading-6"
-              id="azent-prompt-composer"
-              name="azent-prompt-composer"
-              placeholder="Pide un cambio en la web..."
-              rows={1}
-              value={prompt}
-              autoComplete="new-password"
-              autoCorrect="off"
-              autoCapitalize="none"
-              enterKeyHint="send"
-              spellCheck={false}
-              inputMode="text"
-              data-lpignore="true"
-              data-1p-ignore="true"
-              data-bwignore="true"
-              data-protonpass-ignore="true"
-              data-form-type="other"
-              onChange={(event) => {
-                setPrompt(event.target.value)
-                resizeTextarea()
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  event.currentTarget.form?.requestSubmit()
-                }
-              }}
-              disabled={status === 'sending' || !browserSessionId}
-            />
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-black transition duration-200 hover:scale-[1.03] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:scale-100 sm:h-12 sm:w-12 sm:rounded-2xl"
-              aria-label="Enviar prompt"
-              title="Enviar prompt"
+        <div className="flex justify-center">
+          <div
+            className="flex justify-center overflow-hidden rounded-2xl sm:rounded-[1.4rem]"
+            style={{
+              width: visible ? '100%' : '0px',
+              transition: 'width 1000ms cubic-bezier(0.22, 1, 0.36, 1)',
+            }}
+            aria-hidden={!visible}
+            inert={!visible}
+          >
+            <form
+              className="pointer-events-auto shrink-0 rounded-2xl border border-white/12 bg-neutral-950/88 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.48)] backdrop-blur-2xl sm:rounded-[1.4rem] sm:p-2"
+              style={lockedWidth ? { width: `${lockedWidth}px` } : undefined}
+              autoComplete="off"
+              onSubmit={(event) => void handleSubmit(event)}
             >
-              {status === 'sending' ? (
-                <LoaderCircle className="h-4 w-4 animate-spin sm:h-5 sm:w-5" aria-hidden="true" />
-              ) : (
-                <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-              )}
-            </button>
+              <div className="flex items-end gap-1 sm:gap-2">
+                <textarea
+                  ref={textareaRef}
+                  aria-label="Prompt para modificar la web"
+                  aria-autocomplete="none"
+                  className="min-h-9 flex-1 resize-none bg-transparent px-2 py-1.5 text-[16px] leading-5 text-white outline-none placeholder:text-zinc-500 sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm sm:leading-6"
+                  id="azent-prompt-composer"
+                  name="azent-prompt-composer"
+                  placeholder="Pide un cambio en la web..."
+                  rows={1}
+                  value={prompt}
+                  autoComplete="new-password"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  enterKeyHint="send"
+                  spellCheck={false}
+                  inputMode="text"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
+                  data-protonpass-ignore="true"
+                  data-form-type="other"
+                  onChange={(event) => {
+                    setPrompt(event.target.value)
+                    resizeTextarea()
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      event.currentTarget.form?.requestSubmit()
+                    }
+                  }}
+                  disabled={status === 'sending' || !browserSessionId || !visible}
+                />
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-black transition duration-200 hover:scale-[1.03] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:scale-100 sm:h-12 sm:w-12 sm:rounded-2xl"
+                  aria-label="Enviar prompt"
+                  title="Enviar prompt"
+                >
+                  {status === 'sending' ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin sm:h-5 sm:w-5" aria-hidden="true" />
+                  ) : (
+                    <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
