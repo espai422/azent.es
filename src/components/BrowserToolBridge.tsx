@@ -9,6 +9,7 @@ import { useSections, type SectionInput } from '#/components/sections'
 import type { DiagramJSON } from '#/components/sections'
 import { createId } from '#/utils/id'
 import { diffHtml, stripFlashSpans, wrapAllTextAsFlash } from '#/utils/htmlDiff'
+import { engageStreamingAutoscroll } from '#/utils/streamingAutoscroll'
 
 type BrowserToolEvent =
   | { type: 'session.ready'; sessionId: string }
@@ -233,6 +234,7 @@ export function BrowserToolBridge() {
         )
       }
       lastTouchedIdRef.current = newId
+      engageStreamingAutoscroll(newId)
       return { id: newId }
     },
 
@@ -248,6 +250,7 @@ export function BrowserToolBridge() {
       const appended = wrapAllTextAsFlash(html)
       updateSection(id, { content: existing + appended })
       lastTouchedIdRef.current = id
+      engageStreamingAutoscroll(id)
       return { id }
     },
 
@@ -277,6 +280,7 @@ export function BrowserToolBridge() {
         )
       }, 0)
       lastTouchedIdRef.current = id
+      engageStreamingAutoscroll(id)
       return { id, updated: true }
     },
 
@@ -307,6 +311,7 @@ export function BrowserToolBridge() {
       updateSection(id, updates)
       flashBlockOutline(id)
       lastTouchedIdRef.current = id
+      engageStreamingAutoscroll(id)
       return { id, updated: true }
     },
 
@@ -326,6 +331,7 @@ export function BrowserToolBridge() {
       updateSection(id, { formula, variables })
       flashBlockOutline(id)
       lastTouchedIdRef.current = id
+      engageStreamingAutoscroll(id)
       return { id, updated: true }
     },
 
