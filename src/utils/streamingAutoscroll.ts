@@ -18,7 +18,25 @@ function onScroll(): void {
 }
 
 function tick(): void {
-  // Implemented in Task 2.
+  if (state.kind !== 'engaged') return
+
+  const el = document.getElementById(state.blockId)
+  if (!el) { setIdle(); return }
+
+  const rect = el.getBoundingClientRect()
+  const vh = window.innerHeight
+  if (vh > 0) {
+    const targetBottomY = vh * TARGET_VIEWPORT_RATIO
+    const overflow = rect.bottom - targetBottomY
+    if (overflow > 0) {
+      const newScrollY = window.scrollY + overflow * FOLLOW_LERP
+      state.lastScrollY = newScrollY
+      suppressed = true
+      window.scrollTo({ top: newScrollY, behavior: 'auto' })
+    }
+  }
+
+  state.rafId = window.requestAnimationFrame(tick)
 }
 
 function setIdle(): void {
@@ -59,8 +77,5 @@ export function _getStateForTests(): State {
 }
 
 // Silence unused-import linter until later tasks wire them in.
-void TARGET_VIEWPORT_RATIO
 void OPT_OUT_PX
 void IDLE_MS
-void FOLLOW_LERP
-void suppressed
