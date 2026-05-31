@@ -258,3 +258,69 @@ describe('streamingAutoscroll — opt-out detection', () => {
     expect(_getStateForTests().kind).toBe('optedOut')
   })
 })
+
+describe('streamingAutoscroll — optedOut transitions', () => {
+  let rafCallback: FrameRequestCallback | null
+  let scrollListener: EventListener | null
+  let currentScrollY: number
+
+  function makeBlock(id: string, bottom: number): HTMLElement {
+    const el = document.createElement('section')
+    el.id = id
+    el.getBoundingClientRect = () => ({
+      top: 0, bottom, height: bottom, left: 0, right: 100, width: 100, x: 0, y: 0,
+      toJSON() { return {} },
+    }) as DOMRect
+    document.body.appendChild(el)
+    return el
+  }
+
+  beforeEach(() => {
+    rafCallback = null
+    scrollListener = null
+    currentScrollY = 0
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      rafCallback = cb
+      return 1
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.stubGlobal('scrollTo', (opts: ScrollToOptions) => { currentScrollY = opts.top ?? 0 })
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => currentScrollY })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1000, writable: true })
+    const origAdd = window.addEventListener.bind(window)
+    vi.spyOn(window, 'addEventListener').mockImplementation((type, listener, opts) => {
+      if (type === 'scroll') scrollListener = listener as EventListener
+      else origAdd(type, listener, opts)
+    })
+    disengageStreamingAutoscroll()
+  })
+  afterEach(() => {
+    document.querySelectorAll('section').forEach(el => el.remove())
+    disengageStreamingAutoscroll()
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  function forceOptOut(blockId: string) {
+    makeBlock(blockId, 500)
+    engageStreamingAutoscroll(blockId)
+    currentScrollY = 300 // > OPT_OUT_PX from lastScrollY=0
+    scrollListener?.(new Event('scroll'))
+  }
+
+  it('engage(sameId) while optedOut stays optedOut', () => {
+    forceOptOut('block-a')
+    engageStreamingAutoscroll('block-a')
+    expect(_getStateForTests().kind).toBe('optedOut')
+  })
+
+  it('engage(differentId) while optedOut re-engages on the new block', () => {
+    forceOptOut('block-a')
+    makeBlock('block-b', 500)
+    engageStreamingAutoscroll('block-b')
+    const s = _getStateForTests()
+    expect(s.kind).toBe('engaged')
+    if (s.kind === 'engaged') expect(s.blockId).toBe('block-b')
+  })
+})

@@ -79,7 +79,17 @@ export function engageStreamingAutoscroll(blockId: string): void {
     return
   }
 
-  // optedOut handled in Task 5.
+  // optedOut: only re-engage if the user moved on to a different block.
+  if (state.blockId === blockId) return
+  window.addEventListener('scroll', onScroll, { passive: true })
+  const rafId = window.requestAnimationFrame(tick)
+  state = {
+    kind: 'engaged',
+    blockId,
+    lastTouchAt: performance.now(),
+    lastScrollY: window.scrollY,
+    rafId,
+  }
 }
 
 export function disengageStreamingAutoscroll(): void {
