@@ -117,3 +117,66 @@ describe('streamingAutoscroll — rAF tick math', () => {
     expect(_getStateForTests().kind).toBe('idle')
   })
 })
+
+describe('streamingAutoscroll — idle timeout', () => {
+  let rafCallback: FrameRequestCallback | null
+  let now: number
+
+  function makeBlock(id: string, bottom: number): HTMLElement {
+    const el = document.createElement('section')
+    el.id = id
+    el.getBoundingClientRect = () => ({
+      top: 0, bottom, height: bottom, left: 0, right: 100, width: 100, x: 0, y: 0,
+      toJSON() { return {} },
+    }) as DOMRect
+    document.body.appendChild(el)
+    return el
+  }
+
+  beforeEach(() => {
+    rafCallback = null
+    now = 1_000_000
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    vi.stubGlobal('performance', { now: () => now })
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      rafCallback = cb
+      return 1
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.stubGlobal('scrollTo', vi.fn())
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0, writable: true })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 1000, writable: true })
+    disengageStreamingAutoscroll()
+  })
+  afterEach(() => {
+    document.querySelectorAll('section').forEach(el => el.remove())
+    disengageStreamingAutoscroll()
+    vi.unstubAllGlobals()
+  })
+
+  it('goes to idle when more than IDLE_MS (1500) passes between engage and a tick', () => {
+    makeBlock('block-a', 500)
+    engageStreamingAutoscroll('block-a')
+    now += 1600 // > IDLE_MS
+    rafCallback?.(0)
+    expect(_getStateForTests().kind).toBe('idle')
+  })
+
+  it('stays engaged when less than IDLE_MS has passed', () => {
+    makeBlock('block-a', 500)
+    engageStreamingAutoscroll('block-a')
+    now += 1000 // < IDLE_MS
+    rafCallback?.(0)
+    expect(_getStateForTests().kind).toBe('engaged')
+  })
+
+  it('re-engaging the same block refreshes lastTouchAt (idle timer resets)', () => {
+    makeBlock('block-a', 500)
+    engageStreamingAutoscroll('block-a')
+    now += 1000
+    engageStreamingAutoscroll('block-a') // refresh
+    now += 1000 // total elapsed since first engage = 2000, since refresh = 1000
+    rafCallback?.(0)
+    expect(_getStateForTests().kind).toBe('engaged')
+  })
+})

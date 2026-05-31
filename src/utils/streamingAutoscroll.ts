@@ -36,6 +36,8 @@ function tick(): void {
     }
   }
 
+  if (performance.now() - state.lastTouchAt > IDLE_MS) { setIdle(); return }
+
   state.rafId = window.requestAnimationFrame(tick)
 }
 
@@ -64,7 +66,13 @@ export function engageStreamingAutoscroll(blockId: string): void {
     return
   }
 
-  // engaged / optedOut transitions handled in later tasks.
+  if (state.kind === 'engaged') {
+    state.lastTouchAt = performance.now()
+    if (state.blockId !== blockId) state.blockId = blockId
+    return
+  }
+
+  // optedOut handled in Task 5.
 }
 
 export function disengageStreamingAutoscroll(): void {
@@ -78,4 +86,3 @@ export function _getStateForTests(): State {
 
 // Silence unused-import linter until later tasks wire them in.
 void OPT_OUT_PX
-void IDLE_MS
