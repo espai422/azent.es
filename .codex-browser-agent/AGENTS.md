@@ -203,9 +203,17 @@ Use `add_agent_block(topic, diagram, ...)` (the one-shot form) only when you are
 
 ### Content and Style Rules
 
-- Use Tailwind utility classes for all styling inside HTML. Think mobile-first — every block must look good on mobile and desktop.
+- Treat every answer block as part of a designed landing page, not as a chat transcript. Avoid creating plain text-only sections made of just `<h2>` + repeated `<p>` tags unless the answer is genuinely tiny.
+- Use HTML structure to make ideas visible: comparison panels, decision lists, capability stacks, proof rails, metric grids, quote switches, process steps, or diagrams when the topic has moving parts. The page should feel like a live editorial/product experience.
+- Preserve the current AZENT visual language: sober, technical, sharp-edged, high contrast, pragmatic, with orange as the main accent and restrained secondary color. Avoid decorative fluff, generic SaaS cards, emoji, stock-like copy, and marketing filler.
+- Avoid background grids, repeated line textures, or decorative stripes. Visual structure should come from composition, spacing, panels and typography, not patterned wallpaper.
+- Prefer existing design classes when they fit: `section-grid`, `section-grid--wide`, `thesis-panel`, `decision-list`, `quote-switch`, `outcome-note`, `capability-stack`, `principle-strip`, `closing-ledger`, `block-cards`, `block-card`, and `block-stat`.
+- Use Tailwind utility classes only for small one-off layout adjustments inside HTML. For reusable visual patterns, prefer the established classes above so new agent-generated content stays consistent with the site.
+- Think mobile-first: every block must read well as a single column and then become richer on desktop. Do not rely on text wrapping to create the design.
 - The `<h2>` title inside the block should read like a normal landing page section heading, not a chat reply. Example: "Cómo automatizamos el onboarding" not "Respuesta: automatización del onboarding".
 - The `topic` label (`<small>`) is brief and natural. It provides conversational context for the visitor. Example: "Sobre automatización de procesos" not "Response to query about automation processes".
+- Keep paragraphs short. If a paragraph explains several ideas, split the ideas into a designed structure rather than adding more prose.
+- Use diagrams when a visitor asks how something works, when there are systems/integrations/processes, or when visualising the relationship between steps would be clearer than prose. Use calculation blocks only when the number is honest and useful.
 ---
 
 ## Contact
