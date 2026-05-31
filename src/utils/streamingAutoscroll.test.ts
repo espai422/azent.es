@@ -324,3 +324,22 @@ describe('streamingAutoscroll — optedOut transitions', () => {
     if (s.kind === 'engaged') expect(s.blockId).toBe('block-b')
   })
 })
+
+describe('streamingAutoscroll — reduced motion', () => {
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    vi.stubGlobal('requestAnimationFrame', vi.fn())
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    disengageStreamingAutoscroll()
+  })
+  afterEach(() => {
+    disengageStreamingAutoscroll()
+    vi.unstubAllGlobals()
+  })
+
+  it('engage is a no-op when prefers-reduced-motion is set', () => {
+    engageStreamingAutoscroll('block-a')
+    expect(_getStateForTests().kind).toBe('idle')
+    expect(window.requestAnimationFrame).not.toHaveBeenCalled()
+  })
+})
