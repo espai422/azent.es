@@ -48,7 +48,7 @@ Estado interno (module-level):
 ```ts
 type State =
   | { kind: 'idle' }
-  | { kind: 'engaged'; blockId: string; lastTouchAt: number; lastTargetY: number; rafId: number }
+  | { kind: 'engaged'; blockId: string; lastTouchAt: number; lastScrollY: number; rafId: number }
   | { kind: 'optedOut'; blockId: string }
 
 const TARGET_VIEWPORT_RATIO = 0.9
@@ -64,7 +64,7 @@ Transiciones:
 | `idle` | `engage(id)` | `engaged{id}` | arrancar rAF, instalar listener de `scroll` |
 | `engaged{id}` | `engage(id)` (mismo) | `engaged{id}` | refrescar `lastTouchAt` |
 | `engaged{id}` | `engage(otherId)` | `engaged{otherId}` | cambiar `blockId`, refrescar `lastTouchAt` |
-| `engaged{id}` | rAF: bottom > 0.9·vh | `engaged{id}` | scroll lerp, guardar `lastTargetY` |
+| `engaged{id}` | rAF: bottom > 0.9·vh | `engaged{id}` | scroll lerp, guardar `lastScrollY` |
 | `engaged{id}` | scroll user (>150 px) | `optedOut{id}` | parar rAF, quitar listener |
 | `engaged{id}` | idle (>1500 ms sin engage) | `idle` | parar rAF, quitar listener |
 | `optedOut{id}` | `engage(otherId)` | `engaged{otherId}` | re-armar en bloque distinto |
@@ -88,9 +88,8 @@ function tick() {
   const overflow = rect.bottom - targetBottomY
 
   if (overflow > 0) {
-    const desiredScrollY = window.scrollY + overflow
     const newScrollY = window.scrollY + overflow * FOLLOW_LERP
-    state.lastTargetY = desiredScrollY
+    state.lastScrollY = newScrollY
     suppressed = true
     window.scrollTo({ top: newScrollY, behavior: 'auto' })
   }
@@ -105,7 +104,7 @@ Decisiones:
 
 - **Solo baja.** Si el agente quita texto y el bottom queda en 60% vh, no rescatamos: el usuario ya está viendo bien el bloque.
 - **Lerp 0.25.** Suaviza el seguimiento — un párrafo de golpe se persigue en ~4 frames en vez de un salto seco. Coopera con la altura interpolada por `useAnimatedHeight` (`getBoundingClientRect` refleja el alto interpolado).
-- **`lastTargetY` = target nominal pleno**, no el lerp aplicado. Durante la persecución el scroll real va unos px por detrás del target, pero muy lejos de los 150 px de tolerancia de opt-out.
+- **`lastScrollY` = el scrollY que comandamos** (post-lerp), no el "target nominal pleno". Así, sin intervención del usuario, `window.scrollY === lastScrollY` y el delta de opt-out es 0 — sólo se acumula cuando el usuario mueve el scroll por su cuenta.
 - **Idle por timestamp dentro del tick**, no por `setTimeout`. Cero overhead extra.
 
 ### Listener de scroll y detección de opt-out
@@ -116,7 +115,7 @@ let suppressed = false
 function onScroll() {
   if (state.kind !== 'engaged') return
   if (suppressed) { suppressed = false; return }
-  if (Math.abs(window.scrollY - state.lastTargetY) > OPT_OUT_PX) {
+  if (Math.abs(window.scrollY - state.lastScrollY) > OPT_OUT_PX) {
     setOptedOut(state.blockId)
   }
 }
@@ -164,12 +163,12 @@ rAF tick cada frame:
   ├── measure el.getBoundingClientRect()
   ├── overflow = bottom - 0.9·vh
   ├── if overflow > 0 → scrollTo(scrollY + overflow * 0.25)
-  ├── lastTargetY = scrollY + overflow (full)
+  ├── lastScrollY = scrollY + overflow * 0.25 (post-lerp)
   └── if now - lastTouchAt > 1500 ms → setIdle()
 
 scroll event (no programatico):
   ↓
-|scrollY - lastTargetY| > 150 px ?
+|scrollY - lastScrollY| > 150 px ?
   ├── sí → state: optedOut{id}, parar rAF
   └── no → ignorar
 ```
@@ -189,9 +188,9 @@ Vitest + happy-dom (mismo patrón que `blockAnimations.test.ts`):
 - `engage(other)` desde `engaged{id}` cambia el `blockId` y refresca `lastTouchAt`.
 - `engage(id)` desde `optedOut{id}` no re-engancha (queda en `optedOut`).
 - `engage(other)` desde `optedOut{id}` re-engancha en el nuevo bloque.
-- rAF tick: con un bloque cuyo `getBoundingClientRect` devuelve `bottom = 0.95·vh`, el siguiente `window.scrollTo` recibe un target = `scrollY + overflow * 0.25` y `lastTargetY = scrollY + overflow` pleno.
+- rAF tick: con un bloque cuyo `getBoundingClientRect` devuelve `bottom = 0.95·vh`, el siguiente `window.scrollTo` recibe un target = `scrollY + overflow * 0.25` y `lastScrollY` queda igual a ese target post-lerp.
 - rAF tick: si `bottom = 0.5·vh` (no overflow), no llama `scrollTo`.
-- Opt-out: simular `scroll` event con `window.scrollY` desviado > 150 px de `lastTargetY` transiciona a `optedOut`.
+- Opt-out: simular `scroll` event con `window.scrollY` desviado > 150 px de `lastScrollY` transiciona a `optedOut`.
 - Opt-out: simular `scroll` event con `suppressed = true` no transiciona.
 - Idle: avanzar `performance.now` mock más de 1500 ms sin `engage()` → siguiente tick va a `idle`.
 - Reduced motion: con `matchMedia('(prefers-reduced-motion: reduce)')` matched, `engage(id)` no arranca el loop y queda en `idle`.
