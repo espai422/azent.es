@@ -2,6 +2,7 @@ import { Codex, type Thread } from '@openai/codex-sdk'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { CODEX_MODEL, CODEX_MODEL_REASONING_EFFORT } from '../../codex.config'
+import { isLocalAgentMemoryEnabled } from './localAgentMemory'
 
 type SessionThread = {
   thread: Thread
@@ -20,6 +21,7 @@ function ensureBrowserAgentWorkingDirectory() {
 
 export function getCodex(appOrigin: string): Codex {
   const mcpUrl = `${appOrigin}/api/mcp/browser-tools`
+  const localAgentMemoryMcpUrl = `${appOrigin}/api/mcp/local-agent-memory`
 
   if (codex && configuredMcpUrl === mcpUrl) return codex
 
@@ -30,6 +32,14 @@ export function getCodex(appOrigin: string): Codex {
           url: mcpUrl,
           default_tools_approval_mode: 'approve',
         },
+        ...(isLocalAgentMemoryEnabled()
+          ? {
+              local_agent_memory: {
+                url: localAgentMemoryMcpUrl,
+                default_tools_approval_mode: 'approve',
+              },
+            }
+          : {}),
       },
     },
   })

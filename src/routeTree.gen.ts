@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiMcpLocalAgentMemoryRouteImport } from './routes/api/mcp/local-agent-memory'
 import { Route as ApiMcpBrowserToolsRouteImport } from './routes/api/mcp/browser-tools'
 import { Route as ApiChatStreamRouteImport } from './routes/api/chat/stream'
 import { Route as ApiChatInitRouteImport } from './routes/api/chat/init'
@@ -26,6 +27,11 @@ const ChatRoute = ChatRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpLocalAgentMemoryRoute = ApiMcpLocalAgentMemoryRouteImport.update({
+  id: '/api/mcp/local-agent-memory',
+  path: '/api/mcp/local-agent-memory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMcpBrowserToolsRoute = ApiMcpBrowserToolsRouteImport.update({
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
+  '/api/mcp/local-agent-memory': typeof ApiMcpLocalAgentMemoryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
+  '/api/mcp/local-agent-memory': typeof ApiMcpLocalAgentMemoryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
+  '/api/mcp/local-agent-memory': typeof ApiMcpLocalAgentMemoryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
+    | '/api/mcp/local-agent-memory'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
+    | '/api/mcp/local-agent-memory'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
+    | '/api/mcp/local-agent-memory'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   ApiChatInitRoute: typeof ApiChatInitRoute
   ApiChatStreamRoute: typeof ApiChatStreamRoute
   ApiMcpBrowserToolsRoute: typeof ApiMcpBrowserToolsRoute
+  ApiMcpLocalAgentMemoryRoute: typeof ApiMcpLocalAgentMemoryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp/local-agent-memory': {
+      id: '/api/mcp/local-agent-memory'
+      path: '/api/mcp/local-agent-memory'
+      fullPath: '/api/mcp/local-agent-memory'
+      preLoaderRoute: typeof ApiMcpLocalAgentMemoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/mcp/browser-tools': {
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatInitRoute: ApiChatInitRoute,
   ApiChatStreamRoute: ApiChatStreamRoute,
   ApiMcpBrowserToolsRoute: ApiMcpBrowserToolsRoute,
+  ApiMcpLocalAgentMemoryRoute: ApiMcpLocalAgentMemoryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

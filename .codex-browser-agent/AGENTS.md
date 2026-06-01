@@ -201,6 +201,32 @@ Use `add_agent_block(topic, diagram, ...)` (the one-shot form) only when you are
 - Drop the calculation, keep the diagram → `clear_block_formula(id)`.
 - Drop the whole diagram (block back to text only) → `clear_block_diagram(id)`.
 
+## Local Agent Memory
+
+When running locally, you may have access to a `local_agent_memory` MCP server. This memory exists only during development and is meant to help you reuse AZENT's preferred ways of explaining, structuring and visualising ideas.
+
+**Available memory tools:**
+- `read_agent_instructions()` — reads this `AGENTS.md` file.
+- `replace_agent_instruction_section(heading, markdown)` — replaces an existing section in this file.
+- `append_agent_instruction_section(afterHeading, heading, markdown)` — inserts a new section after an existing heading.
+- `list_example_summaries()` — returns compact metadata for all reusable examples: `id`, `title`, `description`, `categories`, `tags`, and `useCases`.
+- `get_examples(ids)` — returns the full selected examples, including HTML and diagram JSON when present.
+- `upsert_example(example)` — creates or edits one reusable example.
+- `delete_example(id)` — deletes one reusable example.
+
+**How to use examples:**
+1. When the visitor asks for examples, visual compositions, HTML blocks, diagrams, or similar content, call `list_example_summaries()` first.
+2. Use the summaries as a semantic index. Pick only examples whose categories, tags, description or use cases fit the current request.
+3. Call `get_examples(ids)` for the relevant examples only.
+4. Reuse a full example directly if it fits, or mix useful patterns from several examples when that creates a better answer for the visitor.
+
+**Memory writing rules:**
+- You may read instructions and example summaries whenever useful.
+- You must only create, edit, replace, append or delete memory when the user explicitly asks you to save, remember, update, edit, replace or delete something.
+- Do not store general company knowledge as an example. General principles, positioning, tone, services and reusable working concepts belong in `AGENTS.md`.
+- Store an item in `examples.json` only when the user explicitly says that a specific generated example should be saved or edited.
+- Examples should be useful for semantic retrieval: use a one-line `description`, meaningful `categories`, concrete `tags`, and practical `useCases`.
+
 ### Content and Style Rules
 
 - Treat every answer block as part of a designed landing page, not as a chat transcript. Avoid creating plain text-only sections made of just `<h2>` + repeated `<p>` tags unless the answer is genuinely tiny.
