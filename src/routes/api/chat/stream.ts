@@ -1,19 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { ThreadEvent } from '@openai/codex-sdk'
 import { getThreadForBrowserSession, setBrowserSessionActiveTurn } from '#/server/codex'
+import type { ClientStreamEvent } from '#/shared/chatStream'
 
 const encoder = new TextEncoder()
-
-type ClientStreamEvent =
-  | { type: 'thread.started'; threadId: string }
-  | { type: 'turn.started' }
-  | { type: 'message.completed'; text: string }
-  | { type: 'reasoning.completed'; text: string }
-  | { type: 'tool.started'; id: string; tool: string; args: unknown }
-  | { type: 'tool.completed'; id: string; tool: string; result: unknown }
-  | { type: 'tool.failed'; id: string; tool: string; error: string }
-  | { type: 'error'; message: string }
-  | { type: 'turn.completed'; finalResponse: string }
 
 function encodeEvent(event: ClientStreamEvent) {
   return encoder.encode(`${JSON.stringify(event)}\n`)

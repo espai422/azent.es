@@ -1,0 +1,145 @@
+.block-content .reflect-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  max-width: 72rem;
+  width: 100%;
+}
+
+.block-content .reflect-grid--compact {
+  margin-top: 1rem;
+}
+
+.block-content .reflect-panel,
+.block-content .edge-panel,
+.block-content .signal-list > * {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.block-content .reflect-panel {
+  min-height: 10rem;
+  padding: 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--prose-line) 70%, transparent);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel) 78%, transparent), transparent 74%),
+    color-mix(in srgb, var(--prose-panel) 52%, transparent);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.block-content .reflect-panel::before,
+.block-content .edge-panel::before,
+.block-content .signal-list > *::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 30%,
+      color-mix(in srgb, var(--prose-accent) 30%, transparent) 48%,
+      color-mix(in srgb, var(--prose-secondary) 16%, transparent) 54%,
+      transparent 68%,
+      transparent 100%
+    );
+  opacity: 0;
+  transform: translateX(-70%);
+  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+
+.block-content .reflect-panel::after,
+.block-content .corner-frame::after {
+  content: '';
+  position: absolute;
+  inset: auto 1rem 1rem auto;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-right: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.block-content .edge-panel {
+  padding: 1.1rem 1.25rem;
+  border-left: 1px solid color-mix(in srgb, var(--prose-accent) 55%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--prose-accent) 11%, transparent), transparent 68%),
+    color-mix(in srgb, var(--prose-panel) 44%, transparent);
+}
+
+.block-content .signal-list {
+  display: grid;
+  gap: 1px;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  list-style: none;
+  background: color-mix(in srgb, var(--prose-line) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--prose-line) 72%, transparent);
+}
+
+.block-content .signal-list > * {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--prose-panel) 46%, transparent), transparent 80%),
+    color-mix(in srgb, var(--prose-panel) 28%, transparent);
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.block-content .reflect-panel:hover,
+.block-content .edge-panel:hover,
+.block-content .signal-list > *:hover {
+  border-color: color-mix(in srgb, var(--prose-accent) 42%, var(--prose-line));
+  background:
+    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--prose-accent) 18%, transparent), transparent 34%),
+    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel-strong) 88%, transparent), transparent 76%),
+    color-mix(in srgb, var(--prose-panel-strong) 68%, transparent);
+  box-shadow:
+    0 1rem 2.5rem rgba(0, 0, 0, 0.16),
+    0 0 2.25rem color-mix(in srgb, var(--prose-accent) 13%, transparent);
+  transform: translateY(-2px);
+}
+
+.block-content .reflect-panel:hover::before,
+.block-content .edge-panel:hover::before,
+.block-content .signal-list > *:hover::before {
+  opacity: 0.82;
+  transform: translateX(36%);
+}
+
+.block-content .reflect-panel > *,
+.block-content .edge-panel > *,
+.block-content .signal-list > * > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .block-content .reflect-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .block-content .reflect-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .block-content .reflect-panel {
+    padding: 1.6rem;
+  }
+}

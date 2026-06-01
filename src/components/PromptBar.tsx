@@ -1,20 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Dispatch, FormEvent, SetStateAction } from 'react'
+import type { FormEvent } from 'react'
 import { ArrowUp, Check, LoaderCircle, Sparkles, Wrench } from 'lucide-react'
-
-type PromptStatus = 'idle' | 'sending' | 'sent' | 'error'
-type Activity = { id: string; label: string; state: 'active' | 'done' | 'error' }
-
-type StreamEvent =
-  | { type: 'thread.started'; threadId: string }
-  | { type: 'turn.started' }
-  | { type: 'message.completed'; text: string }
-  | { type: 'reasoning.completed'; text: string }
-  | { type: 'tool.started'; id: string; tool: string; args: unknown }
-  | { type: 'tool.completed'; id: string; tool: string; result: unknown }
-  | { type: 'tool.failed'; id: string; tool: string; error: string }
-  | { type: 'error'; message: string }
-  | { type: 'turn.completed'; finalResponse: string }
+import { reduceActivities } from './prompt/activityReducer'
+import { streamPrompt } from './prompt/streamClient'
+import type { Activity, PromptStatus } from './prompt/types'
 
 export function PromptBar() {
   const [prompt, setPrompt] = useState('')
@@ -80,7 +69,9 @@ export function PromptBar() {
     setActivities([{ id: 'turn', label: 'Preparando turno', state: 'active' }])
 
     try {
-      await streamPrompt(nextPrompt, browserSessionId, setActivities)
+      await streamPrompt(nextPrompt, browserSessionId, (streamEvent) => {
+        setActivities((prev) => reduceActivities(prev, streamEvent))
+      })
       setStatus('sent')
     } catch (error) {
       setStatus('error')
@@ -216,128 +207,4 @@ export function PromptBar() {
       </div>
     </div>
   )
-}
-
-async function streamPrompt(
-  message: string,
-  browserSessionId: string,
-  setActivities: Dispatch<SetStateAction<Activity[]>>,
-) {
-  const response = await fetch('/api/chat/stream', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, browserSessionId }),
-  })
-
-  if (!response.ok || !response.body) {
-    const error = await response.json().catch(() => null) as { error?: string } | null
-    throw new Error(error?.error || 'No se pudo abrir el stream')
-  }
-
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() || ''
-
-    for (const line of lines) {
-      if (!line.trim()) continue
-      handleStreamEvent(JSON.parse(line) as StreamEvent, setActivities)
-    }
-  }
-}
-
-function handleStreamEvent(
-  event: StreamEvent,
-  setActivities: Dispatch<SetStateAction<Activity[]>>,
-) {
-  switch (event.type) {
-    case 'thread.started':
-      setActivities((prev) => [
-        ...prev.map((activity) =>
-          activity.id === 'turn' ? { ...activity, state: 'done' as const } : activity,
-        ),
-        { id: event.threadId, label: `Thread ${event.threadId.slice(0, 8)}`, state: 'done' },
-      ])
-      break
-    case 'turn.started':
-      setActivities((prev) => [
-        ...prev.map((activity) =>
-          activity.id === 'turn' ? { ...activity, state: 'done' as const } : activity,
-        ),
-        { id: `turn-started-${Date.now()}`, label: 'Codex pensando', state: 'active' },
-      ])
-      break
-    case 'reasoning.completed':
-      if (event.text.trim()) {
-        setActivities((prev) => [
-          ...prev,
-          { id: `reasoning-${Date.now()}`, label: event.text.trim(), state: 'done' },
-        ])
-      }
-      break
-    case 'message.completed':
-      if (event.text.trim()) {
-        setActivities((prev) => [
-          ...prev,
-          { id: `message-${Date.now()}`, label: event.text.trim(), state: 'done' },
-        ])
-      }
-      break
-    case 'tool.started':
-      setActivities((prev) => [
-        ...prev,
-        { id: event.id, label: `Ejecutando ${event.tool}`, state: 'active' },
-      ])
-      break
-    case 'tool.completed':
-      setActivities((prev) =>
-        prev.map((activity) =>
-          activity.id === event.id
-            ? { ...activity, label: `${event.tool} completada`, state: 'done' }
-            : activity,
-        ),
-      )
-      break
-    case 'tool.failed':
-      setActivities((prev) =>
-        prev.map((activity) =>
-          activity.id === event.id
-            ? { ...activity, label: `${event.tool}: ${event.error}`, state: 'error' }
-            : activity,
-        ),
-      )
-      break
-    case 'error':
-      setActivities((prev) => [
-        ...prev,
-        { id: `error-${Date.now()}`, label: event.message, state: 'error' },
-      ])
-      break
-    case 'turn.completed':
-      setActivities((prev) => {
-        const finalResponse = event.finalResponse.trim()
-        const alreadyShown = finalResponse
-          ? prev.some((activity) => activity.label === finalResponse)
-          : true
-
-        const completedActivities = prev.map((activity) =>
-          activity.state === 'active' ? { ...activity, state: 'done' as const } : activity,
-        )
-
-        if (alreadyShown) return completedActivities
-
-        return [
-          ...completedActivities,
-          { id: `complete-${Date.now()}`, label: finalResponse, state: 'done' },
-        ]
-      })
-      break
-  }
 }

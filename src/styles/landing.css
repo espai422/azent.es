@@ -1,0 +1,435 @@
+.hero-composition {
+  display: grid;
+  gap: 2rem;
+  width: 100%;
+}
+
+.hero-copy {
+  max-width: 52rem;
+}
+
+.proof-rail,
+.principle-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--prose-line);
+  background: color-mix(in srgb, var(--prose-line) 42%, transparent);
+  gap: 1px;
+}
+
+.proof-rail span,
+.principle-strip span {
+  display: flex;
+  position: relative;
+  align-items: center;
+  min-height: 4.25rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 0;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--prose-panel) 24%, transparent), transparent 76%),
+    color-mix(in srgb, var(--prose-panel) 12%, transparent);
+  color: var(--prose-heading);
+  font-size: 0.86rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.proof-rail span:last-child,
+.principle-strip span:last-child {
+  border-bottom: 0;
+}
+
+.proof-rail span::before,
+.principle-strip span::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.75rem;
+  background: var(--prose-accent);
+  box-shadow: 0 0 0 5px rgba(255,107,43,0.12);
+}
+
+.proof-rail span:hover,
+.principle-strip span:hover {
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--prose-accent) 18%, transparent), transparent 42%),
+    color-mix(in srgb, var(--prose-panel-strong) 80%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--prose-accent) 25%, transparent);
+  transform: translateY(-1px);
+}
+
+.section-grid,
+.question-layout,
+.pragmatic-band {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+.section-grid > div:first-child,
+.question-layout > div:first-child,
+.pragmatic-band > div:first-child {
+  max-width: 38rem;
+}
+
+.section-grid--wide > div:first-child {
+  max-width: 44rem;
+}
+
+.thesis-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 16rem;
+  padding: 1.4rem;
+  border: 1px solid var(--prose-line);
+  background:
+    linear-gradient(135deg, var(--prose-panel-strong), transparent 62%),
+    var(--prose-panel);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.thesis-panel::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 32%,
+      color-mix(in srgb, var(--prose-accent) 24%, transparent) 50%,
+      color-mix(in srgb, var(--prose-secondary) 12%, transparent) 56%,
+      transparent 70%
+    );
+  opacity: 0;
+  transform: translateX(-70%);
+  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+
+.thesis-panel::after {
+  content: '';
+  position: absolute;
+  inset: auto 1.4rem 1.4rem auto;
+  width: 5rem;
+  height: 5rem;
+  border-right: 1px solid var(--prose-accent);
+  border-bottom: 1px solid var(--prose-accent);
+  z-index: 2;
+}
+
+.thesis-panel:hover {
+  border-color: color-mix(in srgb, var(--prose-accent) 42%, var(--prose-line));
+  box-shadow:
+    0 1rem 2.5rem rgba(0, 0, 0, 0.16),
+    0 0 2.25rem color-mix(in srgb, var(--prose-accent) 10%, transparent);
+  transform: translateY(-2px);
+}
+
+.thesis-panel:hover::before {
+  opacity: 0.72;
+  transform: translateX(34%);
+}
+
+.thesis-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.panel-index {
+  display: block;
+  color: var(--prose-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4rem;
+}
+
+.thesis-panel p {
+  color: var(--prose-body);
+  margin-bottom: 0.6rem;
+}
+
+.thesis-panel strong {
+  display: block;
+  max-width: 15rem;
+  color: var(--prose-heading);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.06;
+}
+
+.decision-list,
+.capability-stack {
+  display: grid;
+  border-top: 1px solid var(--prose-line);
+}
+
+.decision-list > div,
+.capability-stack article {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  gap: 0.65rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--prose-line);
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.decision-list > div::before,
+.capability-stack article::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--prose-accent) 13%, transparent), transparent 68%);
+  opacity: 0;
+  transform: translateX(-18%);
+  transition: opacity 220ms ease, transform 420ms ease;
+  pointer-events: none;
+}
+
+.decision-list > div:hover,
+.capability-stack article:hover {
+  background: color-mix(in srgb, var(--prose-panel-strong) 72%, transparent);
+  border-color: color-mix(in srgb, var(--prose-accent) 36%, var(--prose-line));
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--prose-accent) 70%, transparent);
+}
+
+.decision-list > div:hover::before,
+.capability-stack article:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.decision-list > div > *,
+.capability-stack article > * {
+  position: relative;
+  z-index: 1;
+}
+
+.decision-list span,
+.capability-stack span,
+.quote-switch span {
+  color: var(--prose-accent);
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.decision-list p,
+.capability-stack p {
+  margin-bottom: 0;
+}
+
+.quote-switch {
+  display: grid;
+  gap: 1px;
+  background: var(--prose-line);
+  border: 1px solid var(--prose-line);
+}
+
+.quote-switch p {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  gap: 1rem;
+  margin: 0;
+  padding: 1.25rem;
+  background: color-mix(in srgb, var(--prose-panel) 45%, transparent);
+  color: var(--prose-heading);
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  line-height: 1.14;
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.quote-switch p:last-child {
+  background: var(--prose-panel-strong);
+}
+
+.quote-switch p:last-child span {
+  color: var(--prose-secondary);
+}
+
+.quote-switch p::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 32%,
+      color-mix(in srgb, var(--prose-accent) 22%, transparent) 50%,
+      color-mix(in srgb, var(--prose-secondary) 13%, transparent) 57%,
+      transparent 72%
+    );
+  opacity: 0;
+  transform: translateX(-70%);
+  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+
+.quote-switch p:hover {
+  background: color-mix(in srgb, var(--prose-panel-strong) 84%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--prose-accent) 24%, transparent);
+  transform: translateY(-1px);
+}
+
+.quote-switch p:hover::before {
+  opacity: 0.75;
+  transform: translateX(34%);
+}
+
+.quote-switch p > * {
+  position: relative;
+  z-index: 1;
+}
+
+.outcome-note {
+  max-width: 52rem;
+  margin-top: 2rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--prose-accent);
+  color: var(--prose-heading) !important;
+}
+
+.capability-stack {
+  border: 1px solid var(--prose-line);
+  background: color-mix(in srgb, var(--prose-line) 42%, transparent);
+  gap: 1px;
+}
+
+.capability-stack article {
+  padding: 1.25rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--prose-panel) 24%, transparent), transparent 76%),
+    color-mix(in srgb, var(--prose-panel) 12%, transparent);
+}
+
+.capability-stack article:last-child {
+  border-bottom: 0;
+}
+
+.pragmatic-band {
+  max-width: 72rem;
+}
+
+.closing-ledger {
+  display: grid;
+  gap: 2rem;
+}
+
+.ledger-intro {
+  max-width: 44rem;
+}
+
+.ledger-intro p {
+  color: var(--prose-heading);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1.16;
+}
+
+.final-statement {
+  display: grid;
+  gap: 1rem;
+  max-width: 50rem;
+}
+
+.final-statement span {
+  color: var(--prose-accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.final-statement p {
+  color: var(--prose-heading);
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1.12;
+}
+
+@media (min-width: 768px) {
+  .hero-composition {
+    gap: 3rem;
+  }
+
+  .proof-rail,
+  .principle-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .proof-rail span,
+  .principle-strip span {
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .proof-rail span:last-child,
+  .principle-strip span:last-child {
+    border-right: 0;
+  }
+
+  .section-grid,
+  .question-layout,
+  .pragmatic-band {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.82fr);
+    gap: 3.5rem;
+  }
+
+  .section-grid--wide {
+    grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.95fr);
+  }
+
+  .pragmatic-band {
+    grid-template-columns: minmax(0, 1.05fr) minmax(24rem, 0.95fr);
+  }
+
+  .pragmatic-band .principle-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .pragmatic-band .principle-strip span {
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .pragmatic-band .principle-strip span:last-child {
+    border-bottom: 0;
+  }
+
+  .quote-switch p {
+    min-height: 8.5rem;
+    font-size: 1.85rem;
+  }
+
+  .ledger-intro p,
+  .final-statement p {
+    font-size: 3rem;
+  }
+}

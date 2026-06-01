@@ -1,0 +1,68 @@
+.block-diagram-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+.block-diagram-frame {
+  width: 100%;
+  max-width: 72rem;
+}
+
+.block-section [data-diagram-canvas] {
+  background: transparent;
+}
+
+.block-section .react-flow__attribution {
+  display: none;
+}
+
+.block-section .react-flow__node {
+  font-family: var(--font-sans);
+}
+
+.block-section .react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.block-section [data-diagram-position] .react-flow {
+  border-radius: 6px;
+}
+
+.react-flow__node {
+  transition: transform 1000ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes azent-node-enter {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes azent-node-exit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.9); }
+}
+
+.azent-node--entering {
+  animation: azent-node-enter 700ms ease-out forwards;
+}
+
+.azent-node--exiting {
+  animation: azent-node-exit 500ms ease-in forwards;
+  pointer-events: none;
+}
+
+.azent-edge__path {
+  transition: stroke 500ms ease-out, stroke-width 500ms ease-out, opacity 400ms ease-in;
+}
+
+@keyframes azent-edge-label-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.azent-edge__label-wrap {
+  animation: azent-edge-label-in 500ms ease-out forwards;
+}
