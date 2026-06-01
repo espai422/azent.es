@@ -104,6 +104,7 @@ export const Route = createFileRoute('/api/chat/stream')({
           'You can control the current web page through the browser_tools MCP server.',
           'Every browser_tools call requires the exact browserSessionId above.',
           'Prefer using get_page_snapshot first, then apply focused changes with the browser tools.',
+          'When generating HTML, prefer the site visual primitives over ad-hoc gray panels: use reflect-grid for a responsive panel grid, reflect-grid--three for three columns, reflect-panel for reflective hover panels, edge-panel for a subtle left-accent callout, corner-frame to add a fine corner mark, signal-list for compact stacked items, block-cards/block-card/block-stat for metric cards, accent for orange emphasis, and outcome-note for an important left-rule note. Keep typography consistent with the site and avoid forcing serif fonts inside generated panels unless the content is a deliberate quote.',
           'Keep the user updated briefly in Spanish while you work.',
           '',
           `User request: ${message}`,

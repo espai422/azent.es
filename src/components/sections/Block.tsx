@@ -51,7 +51,6 @@ export function Block({ config, index, prevTab }: BlockProps) {
       {hasDiagram ? (
         <SplitLayout
           config={config}
-          position={position}
           contentRef={contentRef}
         />
       ) : (
@@ -67,24 +66,14 @@ export function Block({ config, index, prevTab }: BlockProps) {
 
 function SplitLayout({
   config,
-  position,
   contentRef,
 }: {
   config: SectionConfig
-  position: 'before' | 'after'
   contentRef: React.RefObject<HTMLDivElement | null>
 }) {
-  const diagramOrderClass = position === 'before' ? 'md:order-1' : 'md:order-2'
-  const textOrderClass = position === 'before' ? 'md:order-2' : 'md:order-1'
-  const mobileOrderDiagram = position === 'before' ? 'order-1' : 'order-2'
-  const mobileOrderText = position === 'before' ? 'order-2' : 'order-1'
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
-      <div className={`${mobileOrderDiagram} ${diagramOrderClass} w-full`}>
-        {config.diagram && <DiagramCanvas data={config.diagram} />}
-      </div>
-      <div className={`${mobileOrderText} ${textOrderClass} w-full min-w-0`}>
+    <div className="block-diagram-layout">
+      <div className="w-full min-w-0">
         <div
           ref={contentRef}
           className="block-content"
@@ -96,6 +85,9 @@ function SplitLayout({
             baselineVariables={config.variables ?? {}}
           />
         )}
+      </div>
+      <div className="block-diagram-frame">
+        {config.diagram && <DiagramCanvas data={config.diagram} />}
       </div>
     </div>
   )

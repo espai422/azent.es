@@ -29,7 +29,7 @@ const variablesSchema = z.record(z.string().min(1), z.number().finite())
   .describe('Map of variable names to numeric values. Every name used in the formula must be present.')
 
 const diagramPositionSchema = z.enum(['before', 'after'])
-  .describe('Where the diagram appears relative to the text: "before" (left in desktop / top in mobile) or "after" (right in desktop / bottom in mobile).')
+  .describe('Legacy placement metadata. Diagrams currently render below the block HTML for maximum content width.')
 
 type ToolArgs = Record<string, unknown>
 
@@ -109,7 +109,7 @@ function createBrowserMcpServer() {
       inputSchema: {
         sessionId,
         id: z.string().min(1).describe('Block id returned by add_agent_block.'),
-        html: z.string().min(1).describe('HTML fragment to append. Use Tailwind utility classes. Keep mobile-first responsive design in mind.'),
+        html: z.string().min(1).describe('HTML fragment to append. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note. Keep mobile-first responsive design in mind.'),
       },
     },
     ({ sessionId, id, html }) => invoke('append_to_block', sessionId, { id, html }),
@@ -122,7 +122,7 @@ function createBrowserMcpServer() {
       inputSchema: {
         sessionId,
         id: z.string().min(1),
-        html: z.string().min(1).describe('Complete new HTML for the block. Use Tailwind utility classes.'),
+        html: z.string().min(1).describe('Complete new HTML for the block. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note.'),
         topic: z.string().min(1).optional().describe('New topic label. Omit to keep the existing topic.'),
       },
     },
@@ -141,7 +141,7 @@ function createBrowserMcpServer() {
   server.registerTool(
     'set_block_diagram',
     {
-      description: 'Add or replace the diagram of any block. Does not touch the block formula or variables. If the block has no diagramPosition yet, defaults to "after". Scrolls the block into view if needed and flashes an orange border.',
+      description: 'Add or replace the diagram of any block. Does not touch the block formula or variables. Diagrams render below the block HTML. If the block has no diagramPosition yet, defaults to "after". Scrolls the block into view if needed and flashes an orange border.',
       inputSchema: {
         sessionId,
         id: z.string().min(1).describe('Block id.'),
