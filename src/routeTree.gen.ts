@@ -13,6 +13,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiMcpBrowserToolsRouteImport } from './routes/api/mcp/browser-tools'
 import { Route as ApiChatStreamRouteImport } from './routes/api/chat/stream'
+import { Route as ApiChatInitRouteImport } from './routes/api/chat/init'
 import { Route as ApiBrowserToolsResultRouteImport } from './routes/api/browser-tools/result'
 import { Route as ApiBrowserToolsInvokeRouteImport } from './routes/api/browser-tools/invoke'
 import { Route as ApiBrowserSessionEventsRouteImport } from './routes/api/browser-session/events'
@@ -37,6 +38,11 @@ const ApiChatStreamRoute = ApiChatStreamRouteImport.update({
   path: '/api/chat/stream',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatInitRoute = ApiChatInitRouteImport.update({
+  id: '/api/chat/init',
+  path: '/api/chat/init',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBrowserToolsResultRoute = ApiBrowserToolsResultRouteImport.update({
   id: '/api/browser-tools/result',
   path: '/api/browser-tools/result',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/api/browser-session/events': typeof ApiBrowserSessionEventsRoute
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
+  '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/api/browser-session/events': typeof ApiBrowserSessionEventsRoute
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
+  '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/api/browser-session/events': typeof ApiBrowserSessionEventsRoute
   '/api/browser-tools/invoke': typeof ApiBrowserToolsInvokeRoute
   '/api/browser-tools/result': typeof ApiBrowserToolsResultRoute
+  '/api/chat/init': typeof ApiChatInitRoute
   '/api/chat/stream': typeof ApiChatStreamRoute
   '/api/mcp/browser-tools': typeof ApiMcpBrowserToolsRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/api/browser-session/events'
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
+    | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/browser-session/events'
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
+    | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/api/browser-session/events'
     | '/api/browser-tools/invoke'
     | '/api/browser-tools/result'
+    | '/api/chat/init'
     | '/api/chat/stream'
     | '/api/mcp/browser-tools'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   ApiBrowserSessionEventsRoute: typeof ApiBrowserSessionEventsRoute
   ApiBrowserToolsInvokeRoute: typeof ApiBrowserToolsInvokeRoute
   ApiBrowserToolsResultRoute: typeof ApiBrowserToolsResultRoute
+  ApiChatInitRoute: typeof ApiChatInitRoute
   ApiChatStreamRoute: typeof ApiChatStreamRoute
   ApiMcpBrowserToolsRoute: typeof ApiMcpBrowserToolsRoute
 }
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatStreamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat/init': {
+      id: '/api/chat/init'
+      path: '/api/chat/init'
+      fullPath: '/api/chat/init'
+      preLoaderRoute: typeof ApiChatInitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/browser-tools/result': {
       id: '/api/browser-tools/result'
       path: '/api/browser-tools/result'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBrowserSessionEventsRoute: ApiBrowserSessionEventsRoute,
   ApiBrowserToolsInvokeRoute: ApiBrowserToolsInvokeRoute,
   ApiBrowserToolsResultRoute: ApiBrowserToolsResultRoute,
+  ApiChatInitRoute: ApiChatInitRoute,
   ApiChatStreamRoute: ApiChatStreamRoute,
   ApiMcpBrowserToolsRoute: ApiMcpBrowserToolsRoute,
 }

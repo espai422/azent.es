@@ -107,7 +107,7 @@ export function PromptBar() {
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[2147483647] px-3 pb-3 sm:px-6 sm:pb-5">
       <div ref={containerRef} className="mx-auto w-full max-w-3xl">
         {lastPrompt && (
-          <div className="mb-2 flex flex-col items-center gap-2">
+          <div className="mb-2 flex flex-col items-center">
             <div className="pointer-events-auto flex max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-zinc-950/85 px-3 py-2 text-xs leading-5 text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl">
               {status === 'sending' ? (
                 <LoaderCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />
@@ -118,26 +118,33 @@ export function PromptBar() {
               <span className="mt-1 h-3 w-px shrink-0 bg-white/15" aria-hidden="true" />
               <span className="line-clamp-1 min-w-0 whitespace-pre-wrap break-words sm:line-clamp-3">{lastPrompt}</span>
             </div>
-            {activities.length > 0 && (
-              <div className="pointer-events-auto flex w-full max-w-2xl flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-950/82 p-2 text-xs text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl sm:max-h-36 sm:overflow-y-auto">
-                {activities.slice(-6).map((activity, idx, arr) => {
-                  const isLast = idx === arr.length - 1
-                  return (
-                    <div
-                      key={activity.id}
-                      className={`${isLast ? 'flex' : 'hidden sm:flex'} items-center gap-2 rounded-xl px-2 py-1.5`}
-                    >
-                      {activity.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />}
-                      {activity.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden="true" />}
-                      {activity.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-300" aria-hidden="true" />}
-                      <span className="min-w-0 truncate">{activity.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
           </div>
         )}
+
+        <div
+          className={`overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activities.length > 0
+              ? 'mb-2 max-h-20 translate-y-0 opacity-100'
+              : 'mb-0 max-h-0 -translate-y-4 opacity-0'
+          }`}
+        >
+          {(() => {
+            const last = activities[activities.length - 1]
+            if (!last) return null
+            return (
+              <div
+                key={last.id}
+                className="pointer-events-auto mx-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/82 px-3 py-2 text-xs text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl"
+                style={lockedWidth ? { width: `${lockedWidth}px` } : undefined}
+              >
+                {last.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />}
+                {last.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden="true" />}
+                {last.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-300" aria-hidden="true" />}
+                <span className="min-w-0 truncate">{last.label}</span>
+              </div>
+            )
+          })()}
+        </div>
 
         <div className="flex justify-center">
           <div

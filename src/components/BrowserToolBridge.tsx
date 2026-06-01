@@ -365,6 +365,24 @@ export function BrowserToolBridge() {
 
     window.dispatchEvent(new CustomEvent('azent:browser-session', { detail: { sessionId: nextSessionId } }))
 
+    const initSnapshot = {
+      title: document.title,
+      url: window.location.href,
+      sections: sectionsRef.current.map((section, index) => ({
+        index,
+        ...section,
+        content: stripFlashSpans(section.content),
+      })),
+    }
+
+    void fetch('/api/chat/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ browserSessionId: nextSessionId, snapshot: initSnapshot }),
+    }).catch((error) => {
+      console.error('[browser-tool-bridge] prewarm init failed', error)
+    })
+
     const source = new EventSource(`/api/browser-session/events?sessionId=${encodeURIComponent(nextSessionId)}`)
 
     source.onmessage = (event) => {
