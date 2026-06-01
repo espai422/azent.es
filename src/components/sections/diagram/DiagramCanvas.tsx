@@ -1,8 +1,10 @@
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   MarkerType,
 } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
@@ -83,6 +85,8 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
   const prevRef = useRef<DiagramJSON | null>(null)
   const labelRevsRef = useRef<Map<string, number>>(new Map())
   const edgeRevsRef = useRef<Map<string, number>>(new Map())
+  const fittedRef = useRef(false)
+  const rf = useReactFlow()
 
   const initial = (() => {
     const diff = diffDiagram(null, data)
@@ -191,6 +195,16 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
     }
   }, [data])
 
+  useEffect(() => {
+    if (fittedRef.current) return
+    if (nodes.length === 0) return
+    const id = requestAnimationFrame(() => {
+      rf.fitView({ padding: 0.2, duration: 0 })
+      fittedRef.current = true
+    })
+    return () => cancelAnimationFrame(id)
+  }, [nodes, rf])
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -209,8 +223,6 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
       zoomOnDoubleClick={false}
       preventScrolling={false}
       deleteKeyCode={null}
-      fitView
-      fitViewOptions={{ padding: 0.2 }}
       proOptions={{ hideAttribution: true }}
       style={{ background: 'transparent' }}
     >
@@ -229,7 +241,9 @@ export function DiagramCanvas({ data }: Readonly<{ data: DiagramJSON }>) {
   return (
     <div data-diagram-canvas className="w-full h-[320px] md:h-[480px]">
       <ClientOnly>
-        <DiagramGraph data={data} />
+        <ReactFlowProvider>
+          <DiagramGraph data={data} />
+        </ReactFlowProvider>
       </ClientOnly>
     </div>
   )
