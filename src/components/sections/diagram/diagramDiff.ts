@@ -38,8 +38,13 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
   const nextNodeIds = new Set(next.nodes.map((n) => n.id))
 
   for (const n of next.nodes) {
-    if (!prevNodeById.has(n.id)) {
+    const prevNode = prevNodeById.get(n.id)
+    if (!prevNode) {
       diff.enteringNodeIds.add(n.id)
+      continue
+    }
+    if (prevNode.x !== n.x || prevNode.y !== n.y) {
+      diff.movedNodeIds.add(n.id)
     }
   }
 
