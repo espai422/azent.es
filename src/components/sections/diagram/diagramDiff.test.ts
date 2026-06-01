@@ -29,6 +29,21 @@ describe('diffDiagram', () => {
     expect(edgeIdentity({ source: 'a', target: 'b' })).toBe('a->b')
     expect(edgeIdentity({ id: 'x', source: 'a', target: 'b' })).toBe('x')
   })
+
+  it('returns all-empty sets when prev and next are deeply equal', () => {
+    const snap: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }],
+      edges: [{ id: 'e1', source: 'a', target: 'a' }],
+    }
+    const diff = diffDiagram(snap, snap)
+    expect(diff.enteringNodeIds.size).toBe(0)
+    expect(diff.exitingNodeIds.size).toBe(0)
+    expect(diff.movedNodeIds.size).toBe(0)
+    expect(diff.changedLabelNodeIds.size).toBe(0)
+    expect(diff.enteringEdgeIds.size).toBe(0)
+    expect(diff.exitingEdgeIds.size).toBe(0)
+    expect(diff.changedEdgeIds.size).toBe(0)
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.
