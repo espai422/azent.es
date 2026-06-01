@@ -101,6 +101,12 @@ function readDiagramPosition(value: unknown): 'before' | 'after' {
   throw new Error('diagramPosition must be "before" or "after"')
 }
 
+function flashBlockById(id: string) {
+  setTimeout(() => {
+    const el = document.getElementById(id)
+    if (el) flashBlockOutline(el)
+  }, 0)
+}
 
 export function BrowserToolBridge() {
   const { sections, addSection, updateSection, removeSection } = useSections()
@@ -298,10 +304,7 @@ export function BrowserToolBridge() {
       }
       await focusBlockIfNeeded(id)
       updateSection(id, updates)
-      setTimeout(() => {
-        const el = document.getElementById(id)
-        if (el) flashBlockOutline(el)
-      }, 0)
+      flashBlockById(id)
       lastTouchedIdRef.current = id
       engageStreamingAutoscroll(id)
       return { id, updated: true }
@@ -321,10 +324,7 @@ export function BrowserToolBridge() {
       const variables = readVariables(args.variables)
       await focusBlockIfNeeded(id)
       updateSection(id, { formula, variables })
-      setTimeout(() => {
-        const el = document.getElementById(id)
-        if (el) flashBlockOutline(el)
-      }, 0)
+      flashBlockById(id)
       lastTouchedIdRef.current = id
       engageStreamingAutoscroll(id)
       return { id, updated: true }
@@ -342,10 +342,7 @@ export function BrowserToolBridge() {
         formula: undefined,
         variables: undefined,
       })
-      setTimeout(() => {
-        const el = document.getElementById(id)
-        if (el) flashBlockOutline(el)
-      }, 0)
+      flashBlockById(id)
       return { id, cleared: true }
     },
 
@@ -356,10 +353,7 @@ export function BrowserToolBridge() {
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
       updateSection(id, { formula: undefined, variables: undefined })
-      setTimeout(() => {
-        const el = document.getElementById(id)
-        if (el) flashBlockOutline(el)
-      }, 0)
+      flashBlockById(id)
       return { id, cleared: true }
     },
     }
