@@ -77,6 +77,12 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
     if (prevEdge.source !== e.source || prevEdge.target !== e.target) {
       diff.exitingEdgeIds.add(id)
       diff.enteringEdgeIds.add(id)
+      continue
+    }
+    const labelChanged = (prevEdge.label ?? '') !== (e.label ?? '')
+    const highlightChanged = (prevEdge.highlight ?? false) !== (e.highlight ?? false)
+    if (labelChanged || highlightChanged) {
+      diff.changedEdgeIds.add(id)
     }
   }
 

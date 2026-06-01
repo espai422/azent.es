@@ -163,6 +163,40 @@ describe('diffDiagram', () => {
     expect(diff.exitingEdgeIds).toEqual(new Set(['e1']))
     expect(diff.enteringEdgeIds).toEqual(new Set(['e1']))
   })
+
+  it('flags an edge as changed when only its label differs', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 80, y: 0 },
+      ],
+      edges: [{ id: 'e1', source: 'a', target: 'b', label: 'antes' }],
+    }
+    const next: DiagramJSON = {
+      nodes: prev.nodes,
+      edges: [{ id: 'e1', source: 'a', target: 'b', label: 'después' }],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.changedEdgeIds).toEqual(new Set(['e1']))
+    expect(diff.enteringEdgeIds.size).toBe(0)
+    expect(diff.exitingEdgeIds.size).toBe(0)
+  })
+
+  it('flags an edge as changed when highlight flips', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 80, y: 0 },
+      ],
+      edges: [{ id: 'e1', source: 'a', target: 'b' }],
+    }
+    const next: DiagramJSON = {
+      nodes: prev.nodes,
+      edges: [{ id: 'e1', source: 'a', target: 'b', highlight: true }],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.changedEdgeIds).toEqual(new Set(['e1']))
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.
