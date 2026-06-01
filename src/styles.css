@@ -1074,3 +1074,41 @@ body {
 .block-section [data-diagram-position] .react-flow {
   border-radius: 6px;
 }
+
+/* Diagram iterative streaming — move transitions and enter/exit keyframes. */
+
+.react-flow__node {
+  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes azent-node-enter {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes azent-node-exit {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.9); }
+}
+
+.azent-node--entering {
+  animation: azent-node-enter 400ms ease-out forwards;
+}
+
+.azent-node--exiting {
+  animation: azent-node-exit 280ms ease-in forwards;
+  pointer-events: none;
+}
+
+.azent-edge__path {
+  transition: stroke 300ms ease-out, stroke-width 300ms ease-out, opacity 240ms ease-in;
+}
+
+@keyframes azent-edge-label-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.azent-edge__label-wrap {
+  animation: azent-edge-label-in 300ms ease-out forwards;
+}
