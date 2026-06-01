@@ -5,64 +5,13 @@ import {
   useEdgesState,
   getBezierPath,
   BaseEdge,
-  Handle,
-  Position,
   MarkerType,
 } from '@xyflow/react'
-import type { NodeProps, EdgeProps, Node, Edge } from '@xyflow/react'
+import type { EdgeProps, Node, Edge } from '@xyflow/react'
 import { useEffect, useState } from 'react'
 import type { DiagramJSON, DiagramNodeDef, DiagramEdgeDef } from './types'
 import '@xyflow/react/dist/style.css'
-
-type AzentNodeData = { label: string }
-
-const HANDLE_STYLE = {
-  background: 'transparent',
-  border: 'none',
-  width: 1,
-  height: 1,
-  opacity: 0,
-} as const
-
-function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
-  return (
-    <div
-      style={{
-        background: 'transparent',
-        border: '1px solid var(--prose-muted)',
-        borderRadius: 8,
-        padding: '12px 18px',
-        minWidth: 110,
-        textAlign: 'center',
-        userSelect: 'none',
-        fontFamily: 'var(--font-sans)',
-      }}
-    >
-      {/* Four invisible handles per side (source + target). The edge code picks
-          the right pair based on the relative position of the two nodes so
-          curves take the shortest natural path instead of always looping
-          top-to-bottom. */}
-      <Handle id="t-top"    type="target" position={Position.Top}    style={HANDLE_STYLE} />
-      <Handle id="s-top"    type="source" position={Position.Top}    style={HANDLE_STYLE} />
-      <Handle id="t-right"  type="target" position={Position.Right}  style={HANDLE_STYLE} />
-      <Handle id="s-right"  type="source" position={Position.Right}  style={HANDLE_STYLE} />
-      <Handle id="t-bottom" type="target" position={Position.Bottom} style={HANDLE_STYLE} />
-      <Handle id="s-bottom" type="source" position={Position.Bottom} style={HANDLE_STYLE} />
-      <Handle id="t-left"   type="target" position={Position.Left}   style={HANDLE_STYLE} />
-      <Handle id="s-left"   type="source" position={Position.Left}   style={HANDLE_STYLE} />
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: 'var(--prose-heading)',
-          letterSpacing: '0.005em',
-        }}
-      >
-        {data.label}
-      </div>
-    </div>
-  )
-}
+import { AzentNode } from './AzentNode'
 
 type AzentEdgeData = { highlight?: boolean }
 
