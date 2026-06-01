@@ -61,4 +61,47 @@ describe('DiagramCanvas', () => {
       vi.useRealTimers()
     }
   })
+
+  it('does not lose the second-update entering flag when a first-update timer fires later', async () => {
+    const first = {
+      nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }],
+      edges: [],
+    }
+    const second = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 80, y: 0 },
+      ],
+      edges: [],
+    }
+    const { container, rerender, findAllByText } = render(<DiagramCanvas data={first} />)
+    await findAllByText('A')
+
+    vi.useFakeTimers()
+    try {
+      // Fire a fast second update before the first's entering timer expires.
+      vi.advanceTimersByTime(100)
+      await act(async () => {
+        rerender(<DiagramCanvas data={second} />)
+      })
+
+      // B is entering right now.
+      const entering = container.querySelectorAll('.azent-node--entering')
+      expect(entering.length).toBeGreaterThanOrEqual(1)
+
+      // Advance to where the FIRST update's 600ms cleanup would have fired
+      // (we are at 100 + ?ms from second update's start). If timers weren't
+      // cancelled, the first run's setNodes(current => map(...)) would
+      // also pass through B, clearing its entering flag prematurely.
+      await act(async () => {
+        vi.advanceTimersByTime(550) // total: 650ms since first mount
+      })
+      // B's 600ms timer (from the SECOND update) shouldn't have fired yet:
+      // it was scheduled at +100ms, fires at +700ms.
+      const stillEntering = container.querySelectorAll('.azent-node--entering')
+      expect(Array.from(stillEntering).some((n) => n.textContent === 'B')).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
