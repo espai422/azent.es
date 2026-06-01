@@ -4,6 +4,7 @@ import {
   scrollSoPointAt,
   scrollSoElementFocused,
   revealBlockSymmetric,
+  flashBlockOutline,
 } from '#/utils/blockAnimations'
 import { useSections, type SectionInput } from '#/components/sections'
 import type { DiagramJSON } from '#/components/sections'
@@ -100,18 +101,6 @@ function readDiagramPosition(value: unknown): 'before' | 'after' {
   throw new Error('diagramPosition must be "before" or "after"')
 }
 
-function flashBlockOutline(id: string) {
-  setTimeout(() => {
-    document.getElementById(id)?.animate(
-      [
-        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
-        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.7)', outlineOffset: '-8px' },
-        { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
-      ],
-      { duration: 400, easing: 'ease-out' },
-    )
-  }, 0)
-}
 
 export function BrowserToolBridge() {
   const { sections, addSection, updateSection, removeSection } = useSections()
@@ -309,7 +298,10 @@ export function BrowserToolBridge() {
       }
       await focusBlockIfNeeded(id)
       updateSection(id, updates)
-      flashBlockOutline(id)
+      setTimeout(() => {
+        const el = document.getElementById(id)
+        if (el) flashBlockOutline(el)
+      }, 0)
       lastTouchedIdRef.current = id
       engageStreamingAutoscroll(id)
       return { id, updated: true }
@@ -329,7 +321,10 @@ export function BrowserToolBridge() {
       const variables = readVariables(args.variables)
       await focusBlockIfNeeded(id)
       updateSection(id, { formula, variables })
-      flashBlockOutline(id)
+      setTimeout(() => {
+        const el = document.getElementById(id)
+        if (el) flashBlockOutline(el)
+      }, 0)
       lastTouchedIdRef.current = id
       engageStreamingAutoscroll(id)
       return { id, updated: true }
@@ -347,7 +342,10 @@ export function BrowserToolBridge() {
         formula: undefined,
         variables: undefined,
       })
-      flashBlockOutline(id)
+      setTimeout(() => {
+        const el = document.getElementById(id)
+        if (el) flashBlockOutline(el)
+      }, 0)
       return { id, cleared: true }
     },
 
@@ -358,7 +356,10 @@ export function BrowserToolBridge() {
       const section = sectionsRef.current.find(s => s.id === id)
       if (!section) throw new Error(`Section not found: ${id}`)
       updateSection(id, { formula: undefined, variables: undefined })
-      flashBlockOutline(id)
+      setTimeout(() => {
+        const el = document.getElementById(id)
+        if (el) flashBlockOutline(el)
+      }, 0)
       return { id, cleared: true }
     },
     }

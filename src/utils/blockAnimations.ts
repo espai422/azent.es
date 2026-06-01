@@ -259,3 +259,14 @@ export function revealBlockSymmetric(
     rafId = requestAnimationFrame(tick)
   })
 }
+
+export function flashBlockOutline(element: HTMLElement, durationMs = 400): void {
+  element.animate(
+    [
+      { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+      { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0.7)', outlineOffset: '-8px' },
+      { outlineStyle: 'solid', outlineWidth: '2px', outlineColor: 'rgba(255,107,43,0)', outlineOffset: '0px' },
+    ],
+    { duration: durationMs, easing: 'ease-out' },
+  )
+}
