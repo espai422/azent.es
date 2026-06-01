@@ -82,7 +82,7 @@ function createBrowserMcpServer() {
   server.registerTool(
     'add_agent_block',
     {
-      description: 'Append a new block at the end of the page. The topic appears as a <small> label above the content, contextualising what the block responds to. Optionally include a diagram (with formula+variables) to create a split block in one call. Returns the block id — save it for follow-up tool calls.',
+      description: 'Append a new block at the end of the page. The topic appears as a <small> label above the content, contextualising what the block responds to. Optionally include a diagram (with formula+variables) to create a split block in one call. Returns the block id — save it for follow-up tool calls. If you include a diagram, prefer starting with one or two seed nodes and growing the graph via repeated set_block_diagram calls — the diagram is meant to be built iteratively in real time, not delivered in a single shot.',
       inputSchema: {
         sessionId,
         topic: z.string().min(1).describe('Short label shown as <small>. Explains what this block is responding to, e.g. "Sobre automatización de procesos".'),
@@ -141,7 +141,7 @@ function createBrowserMcpServer() {
   server.registerTool(
     'set_block_diagram',
     {
-      description: 'Add or replace the diagram of any block. Does not touch the block formula or variables. Diagrams render below the block HTML. If the block has no diagramPosition yet, defaults to "after". Scrolls the block into view if needed and flashes an orange border.',
+      description: 'Set or update the diagram of a block. Build the diagram iteratively: call this tool multiple times, each time sending the full current state of the diagram with one or two more nodes/edges than the last call. The UI animates new nodes/edges in, moves existing ones smoothly to their new position, fades removed ones out, and re-tipea labels that change — driven by stable ids. Keep each node.id and edge.id identical across calls; that is how the UI knows what is new vs. what just moved. If you omit edge.id, the identity is "source->target", which is fine unless you plan to swap endpoints. Reposition existing nodes when you add new ones so the layout stays balanced. Does not touch the block formula or variables. Diagrams render below the block HTML. If the block has no diagramPosition yet, defaults to "after". Scrolls the block into view if needed and flashes an orange border.',
       inputSchema: {
         sessionId,
         id: z.string().min(1).describe('Block id.'),
