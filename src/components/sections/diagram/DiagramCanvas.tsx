@@ -6,30 +6,18 @@ import {
   MarkerType,
 } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DiagramJSON, DiagramNodeDef, DiagramEdgeDef } from './types'
+import { AzentNode, type AzentNodeData } from './AzentNode'
+import { AzentEdge, type AzentEdgeData } from './AzentEdge'
+import { diffDiagram, edgeIdentity } from './diagramDiff'
 import '@xyflow/react/dist/style.css'
-import { AzentNode } from './AzentNode'
-import { AzentEdge } from './AzentEdge'
 
 const nodeTypes = { azent: AzentNode }
 const edgeTypes = { azent: AzentEdge }
 
-function toRFNodes(defs: DiagramNodeDef[]): Node[] {
-  return defs.map((n) => ({
-    id: n.id,
-    type: 'azent',
-    position: { x: n.x, y: n.y },
-    data: { label: n.label },
-  }))
-}
-
 type Side = 'top' | 'right' | 'bottom' | 'left'
 
-// Decide which side of the source node and which side of the target node the
-// edge should attach to, based on their relative positions. Compares the
-// dominant axis between centers; node sizes are similar enough that comparing
-// top-left coordinates yields the same dominant axis.
 function pickSides(source: DiagramNodeDef, target: DiagramNodeDef): { source: Side; target: Side } {
   const dx = target.x - source.x
   const dy = target.y - source.y
@@ -43,39 +31,93 @@ function pickSides(source: DiagramNodeDef, target: DiagramNodeDef): { source: Si
     : { source: 'top', target: 'bottom' }
 }
 
-function toRFEdges(defs: DiagramEdgeDef[], nodes: DiagramNodeDef[]): Edge[] {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]))
-  return defs.map((e, i) => {
-    const sourceNode = nodeMap.get(e.source)
-    const targetNode = nodeMap.get(e.target)
-    const sides = sourceNode && targetNode
-      ? pickSides(sourceNode, targetNode)
-      : ({ source: 'bottom', target: 'top' } as const)
-    return {
-      id: e.id ?? `e-${i}`,
-      source: e.source,
-      target: e.target,
-      sourceHandle: `s-${sides.source}`,
-      targetHandle: `t-${sides.target}`,
-      type: 'azent',
-      label: e.label,
-      data: { highlight: e.highlight === true },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: e.highlight ? 'var(--prose-accent)' : 'var(--prose-muted)',
-      },
-    }
-  })
+function buildNode(
+  def: DiagramNodeDef,
+  flags: { entering: boolean; exiting: boolean; labelRev: number },
+): Node<AzentNodeData> {
+  return {
+    id: def.id,
+    type: 'azent',
+    position: { x: def.x, y: def.y },
+    data: {
+      label: def.label,
+      entering: flags.entering,
+      exiting: flags.exiting,
+      labelRev: flags.labelRev,
+    },
+  }
+}
+
+function buildEdge(
+  def: DiagramEdgeDef,
+  nodeMap: Map<string, DiagramNodeDef>,
+  flags: { entering: boolean; exiting: boolean; edgeRev: number },
+): Edge<AzentEdgeData> {
+  const sourceNode = nodeMap.get(def.source)
+  const targetNode = nodeMap.get(def.target)
+  const sides = sourceNode && targetNode
+    ? pickSides(sourceNode, targetNode)
+    : ({ source: 'bottom', target: 'top' } as const)
+  return {
+    id: edgeIdentity(def),
+    source: def.source,
+    target: def.target,
+    sourceHandle: `s-${sides.source}`,
+    targetHandle: `t-${sides.target}`,
+    type: 'azent',
+    label: def.label,
+    data: {
+      highlight: def.highlight === true,
+      entering: flags.entering,
+      exiting: flags.exiting,
+      edgeRev: flags.edgeRev,
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      color: def.highlight ? 'var(--prose-accent)' : 'var(--prose-muted)',
+    },
+  }
 }
 
 function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
-  const [nodes, setNodes] = useNodesState(toRFNodes(data.nodes))
-  const [edges, setEdges] = useEdgesState(toRFEdges(data.edges, data.nodes))
+  const prevRef = useRef<DiagramJSON | null>(null)
+  const labelRevsRef = useRef<Map<string, number>>(new Map())
+  const edgeRevsRef = useRef<Map<string, number>>(new Map())
 
+  const initial = (() => {
+    const diff = diffDiagram(null, data)
+    const nodeMap = new Map(data.nodes.map((n) => [n.id, n]))
+    const nodes = data.nodes.map((n) =>
+      buildNode(n, {
+        entering: diff.enteringNodeIds.has(n.id),
+        exiting: false,
+        labelRev: 0,
+      }),
+    )
+    const edges = data.edges.map((e) =>
+      buildEdge(e, nodeMap, {
+        entering: diff.enteringEdgeIds.has(edgeIdentity(e)),
+        exiting: false,
+        edgeRev: 0,
+      }),
+    )
+    return { nodes, edges }
+  })()
+
+  const [nodes, setNodes] = useNodesState<Node<AzentNodeData>>(initial.nodes)
+  const [edges, setEdges] = useEdgesState<Edge<AzentEdgeData>>(initial.edges)
+
+  // Persist the initial snapshot as the "previous" baseline so the data-change
+  // effect added in Task 19 has something to diff against.
   useEffect(() => {
-    setNodes(toRFNodes(data.nodes))
-    setEdges(toRFEdges(data.edges, data.nodes))
-  }, [data, setNodes, setEdges])
+    prevRef.current = data
+    // Quiet unused warnings while the full diff-update logic lands in Task 19.
+    void labelRevsRef
+    void edgeRevsRef
+    void setNodes
+    void setEdges
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <ReactFlow
@@ -113,10 +155,7 @@ function ClientOnly({ children }: { children: React.ReactNode }) {
 
 export function DiagramCanvas({ data }: Readonly<{ data: DiagramJSON }>) {
   return (
-    <div
-      data-diagram-canvas
-      className="w-full h-[320px] md:h-[480px]"
-    >
+    <div data-diagram-canvas className="w-full h-[320px] md:h-[480px]">
       <ClientOnly>
         <DiagramGraph data={data} />
       </ClientOnly>
