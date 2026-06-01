@@ -62,6 +62,28 @@ describe('diffDiagram', () => {
     expect(diff.movedNodeIds.size).toBe(0)
     expect(diff.exitingNodeIds.size).toBe(0)
   })
+
+  it('flags a removed node as exiting, plus any edges touching it', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 100, y: 0 },
+      ],
+      edges: [
+        { id: 'e1', source: 'a', target: 'b' },
+      ],
+    }
+    const next: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+      ],
+      edges: [],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.exitingNodeIds).toEqual(new Set(['b']))
+    expect(diff.exitingEdgeIds).toEqual(new Set(['e1']))
+    expect(diff.enteringNodeIds.size).toBe(0)
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.
