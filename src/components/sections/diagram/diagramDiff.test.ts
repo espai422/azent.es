@@ -99,6 +99,35 @@ describe('diffDiagram', () => {
     expect(diff.enteringNodeIds.size).toBe(0)
     expect(diff.changedLabelNodeIds.size).toBe(0)
   })
+
+  it('flags a node whose label changed (same id, same position) as changedLabel', () => {
+    const prev: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }],
+      edges: [],
+    }
+    const next: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A renombrado', x: 0, y: 0 }],
+      edges: [],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.changedLabelNodeIds).toEqual(new Set(['a']))
+    expect(diff.movedNodeIds.size).toBe(0)
+    expect(diff.enteringNodeIds.size).toBe(0)
+  })
+
+  it('flags a node as both moved and changedLabel when both change at once', () => {
+    const prev: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }],
+      edges: [],
+    }
+    const next: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A nuevo', x: 80, y: 12 }],
+      edges: [],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.movedNodeIds).toEqual(new Set(['a']))
+    expect(diff.changedLabelNodeIds).toEqual(new Set(['a']))
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.

@@ -46,6 +46,9 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
     if (prevNode.x !== n.x || prevNode.y !== n.y) {
       diff.movedNodeIds.add(n.id)
     }
+    if (prevNode.label !== n.label) {
+      diff.changedLabelNodeIds.add(n.id)
+    }
   }
 
   for (const n of prev.nodes) {
