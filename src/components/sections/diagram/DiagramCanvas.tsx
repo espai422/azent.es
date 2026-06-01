@@ -161,10 +161,19 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
     setNodes(renderedNodes)
     setEdges(renderedEdges)
 
+    // Refit the viewport so newly added or removed nodes don't get clipped.
+    // First mount: snap (duration 0) so we don't pan from an empty view.
+    // Subsequent updates: animate so the recenter feels intentional.
+    const refitRaf = requestAnimationFrame(() => {
+      if (data.nodes.length === 0) return
+      rf.fitView({ padding: 0.2, duration: fittedRef.current ? 800 : 0 })
+      fittedRef.current = true
+    })
+
     // Schedule cleanup. Drop exiting items after their animation finishes.
     const nodeTimer = window.setTimeout(() => {
       setNodes((current) => current.filter((n) => !diff.exitingNodeIds.has(n.id) || diff.enteringNodeIds.has(n.id)))
-    }, 280)
+    }, 500)
     const edgeTimer = window.setTimeout(() => {
       setEdges((current) =>
         current.filter((e) => {
@@ -172,7 +181,7 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
           return !diff.exitingEdgeIds.has(id) || diff.enteringEdgeIds.has(id)
         }),
       )
-    }, 240)
+    }, 400)
     const enteringTimer = window.setTimeout(() => {
       setNodes((current) =>
         current.map((n) =>
@@ -184,26 +193,21 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
           e.data?.entering ? { ...e, data: { ...e.data, entering: false } } : e,
         ),
       )
-    }, 600)
+    }, 1100)
 
     prevRef.current = data
 
     return () => {
+      cancelAnimationFrame(refitRaf)
       clearTimeout(nodeTimer)
       clearTimeout(edgeTimer)
       clearTimeout(enteringTimer)
     }
+    // `rf` is stable across renders via ReactFlowProvider; including it here
+    // re-fires the effect with prev=data already stored, which wipes entering
+    // flags on first mount. Keep deps to `data` only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
-
-  useEffect(() => {
-    if (fittedRef.current) return
-    if (nodes.length === 0) return
-    const id = requestAnimationFrame(() => {
-      rf.fitView({ padding: 0.2, duration: 0 })
-      fittedRef.current = true
-    })
-    return () => cancelAnimationFrame(id)
-  }, [nodes, rf])
 
   return (
     <ReactFlow

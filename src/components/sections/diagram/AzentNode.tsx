@@ -37,7 +37,7 @@ export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
     if (entering && containerRef.current) {
       // Guard: jsdom does not implement element.animate
       if (typeof containerRef.current.animate === 'function') {
-        flashBlockOutline(containerRef.current, 600)
+        flashBlockOutline(containerRef.current, 900)
       }
     }
   }, [entering])

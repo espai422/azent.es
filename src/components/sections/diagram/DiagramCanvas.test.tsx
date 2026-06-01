@@ -28,7 +28,7 @@ describe('DiagramCanvas', () => {
     })
   })
 
-  it('keeps a removed node mounted for ~280ms with the exiting flag, then drops it', async () => {
+  it('keeps a removed node mounted for ~500ms with the exiting flag, then drops it', async () => {
     const initialData = {
       nodes: [
         { id: 'a', label: 'A', x: 0, y: 0 },
@@ -54,7 +54,7 @@ describe('DiagramCanvas', () => {
 
       // Advance past the exit duration. B unmounts.
       await act(async () => {
-        vi.advanceTimersByTime(320)
+        vi.advanceTimersByTime(550)
       })
       expect(container.querySelectorAll('.azent-node').length).toBe(1)
     } finally {
@@ -89,15 +89,15 @@ describe('DiagramCanvas', () => {
       const entering = container.querySelectorAll('.azent-node--entering')
       expect(entering.length).toBeGreaterThanOrEqual(1)
 
-      // Advance to where the FIRST update's 600ms cleanup would have fired
-      // (we are at 100 + ?ms from second update's start). If timers weren't
-      // cancelled, the first run's setNodes(current => map(...)) would
-      // also pass through B, clearing its entering flag prematurely.
+      // Advance to where the FIRST update's 1100ms entering-clear would have
+      // fired (we are at 100ms + ?). If timers weren't cancelled, the first
+      // run's setNodes(current => map(...)) would also pass through B,
+      // clearing its entering flag prematurely.
       await act(async () => {
-        vi.advanceTimersByTime(550) // total: 650ms since first mount
+        vi.advanceTimersByTime(1050) // total: 1150ms since first mount
       })
-      // B's 600ms timer (from the SECOND update) shouldn't have fired yet:
-      // it was scheduled at +100ms, fires at +700ms.
+      // B's 1100ms timer (from the SECOND update) shouldn't have fired yet:
+      // it was scheduled at +100ms, fires at +1200ms.
       const stillEntering = container.querySelectorAll('.azent-node--entering')
       expect(Array.from(stillEntering).some((n) => n.textContent === 'B')).toBe(true)
     } finally {

@@ -1,0 +1,27 @@
+const __vite_ssr_import_0__ = await __vite_ssr_import__("/node_modules/.pnpm/vitest@4.1.7_@types+node@22.19.19_jsdom@28.1.0_vite@8.0.14_@types+node@22.19.19_jiti@2.7.0_/node_modules/vitest/dist/index.js", {"importedNames":["afterEach"]});
+const __vite_ssr_import_1__ = await __vite_ssr_import__("/node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_6d47d6ccd2a6a07f1dbfe4f0136d418d/node_modules/@testing-library/react/dist/index.js", {"importedNames":["cleanup"]});
+
+
+// ReactFlow (@xyflow/react) requires ResizeObserver, DOMMatrixReadOnly, and
+// HTMLElement geometry APIs that jsdom does not implement. Polyfill them so
+// that smoke tests of components wrapping ReactFlow do not crash on mount.
+if (typeof globalThis.ResizeObserver === "undefined") {
+	class ResizeObserverMock {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	}
+	globalThis.ResizeObserver = ResizeObserverMock;
+};
+if (typeof globalThis.DOMMatrixReadOnly === "undefined") {
+	class DOMMatrixReadOnlyMock {
+		m22 = 1;
+		constructor(_init) {}
+	}
+	globalThis.DOMMatrixReadOnly = DOMMatrixReadOnlyMock;
+};
+(0,__vite_ssr_import_0__.afterEach)((0,__vite_ssr_import_1__.cleanup));
+//# sourceMappingSource=vite-generated
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTs7Ozs7O0FBS0EsSUFBSSxPQUFPLFdBQVcsbUJBQW1CLGFBQWE7Q0FDcEQsTUFBTSxtQkFBbUI7RUFDdkIsVUFBVSxDQUFDO0VBQ1gsWUFBWSxDQUFDO0VBQ2IsYUFBYSxDQUFDO0NBQ2hCO0NBQ0EsV0FBVyxpQkFBaUI7QUFDOUI7QUFFQSxJQUFJLE9BQU8sV0FBVyxzQkFBc0IsYUFBYTtDQUN2RCxNQUFNLHNCQUFzQjtFQUMxQixNQUFNO0VBQ04sWUFBWSxPQUEyQixDQUFDO0NBQzFDO0NBQ0EsV0FBVyxvQkFBb0I7QUFDakM7R0FFQSxvQ0FBVSw4QkFBTyIsIm5hbWVzIjpbXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsidGVzdC1zZXR1cC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBhZnRlckVhY2ggfSBmcm9tICd2aXRlc3QnXG5pbXBvcnQgeyBjbGVhbnVwIH0gZnJvbSAnQHRlc3RpbmctbGlicmFyeS9yZWFjdCdcblxuLy8gUmVhY3RGbG93IChAeHlmbG93L3JlYWN0KSByZXF1aXJlcyBSZXNpemVPYnNlcnZlciwgRE9NTWF0cml4UmVhZE9ubHksIGFuZFxuLy8gSFRNTEVsZW1lbnQgZ2VvbWV0cnkgQVBJcyB0aGF0IGpzZG9tIGRvZXMgbm90IGltcGxlbWVudC4gUG9seWZpbGwgdGhlbSBzb1xuLy8gdGhhdCBzbW9rZSB0ZXN0cyBvZiBjb21wb25lbnRzIHdyYXBwaW5nIFJlYWN0RmxvdyBkbyBub3QgY3Jhc2ggb24gbW91bnQuXG5pZiAodHlwZW9mIGdsb2JhbFRoaXMuUmVzaXplT2JzZXJ2ZXIgPT09ICd1bmRlZmluZWQnKSB7XG4gIGNsYXNzIFJlc2l6ZU9ic2VydmVyTW9jayB7XG4gICAgb2JzZXJ2ZSgpIHt9XG4gICAgdW5vYnNlcnZlKCkge31cbiAgICBkaXNjb25uZWN0KCkge31cbiAgfVxuICBnbG9iYWxUaGlzLlJlc2l6ZU9ic2VydmVyID0gUmVzaXplT2JzZXJ2ZXJNb2NrIGFzIHVua25vd24gYXMgdHlwZW9mIFJlc2l6ZU9ic2VydmVyXG59XG5cbmlmICh0eXBlb2YgZ2xvYmFsVGhpcy5ET01NYXRyaXhSZWFkT25seSA9PT0gJ3VuZGVmaW5lZCcpIHtcbiAgY2xhc3MgRE9NTWF0cml4UmVhZE9ubHlNb2NrIHtcbiAgICBtMjIgPSAxXG4gICAgY29uc3RydWN0b3IoX2luaXQ/OiBzdHJpbmcgfCBudW1iZXJbXSkge31cbiAgfVxuICBnbG9iYWxUaGlzLkRPTU1hdHJpeFJlYWRPbmx5ID0gRE9NTWF0cml4UmVhZE9ubHlNb2NrIGFzIHVua25vd24gYXMgdHlwZW9mIERPTU1hdHJpeFJlYWRPbmx5XG59XG5cbmFmdGVyRWFjaChjbGVhbnVwKVxuIl0sImZpbGUiOiIvc3JjL3Rlc3Qtc2V0dXAudHMifQ==
+
+//# vitestCache=W3siZmlsZSI6IjEiLCJpZCI6IjEiLCJ1cmwiOiIyIiwiaW1wb3J0ZWRVcmxzIjoiMyIsIm1hcHBpbmdzIjpmYWxzZX0sIi9Vc2Vycy9hbmRyZXVnYXJjaWEvRG9jdW1lbnRzL0FaRU5UL2F6ZW50LWVzL3NyYy90ZXN0LXNldHVwLnRzIiwiL3NyYy90ZXN0LXNldHVwLnRzIixbXV0=

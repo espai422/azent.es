@@ -47,7 +47,7 @@ export function AzentEdge({
     if (typeof path.animate !== 'function') return
     const animation = path.animate(
       [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
-      { duration: 700, easing: 'ease-out', fill: 'forwards' },
+      { duration: 1100, easing: 'ease-out', fill: 'forwards' },
     )
     return () => {
       animation.cancel()

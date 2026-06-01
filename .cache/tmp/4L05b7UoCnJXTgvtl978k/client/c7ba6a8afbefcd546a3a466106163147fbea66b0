@@ -1,0 +1,107 @@
+const __vite_ssr_import_0__ = await __vite_ssr_import__("/node_modules/.pnpm/vitest@4.1.7_@types+node@22.19.19_jsdom@28.1.0_vite@8.0.14_@types+node@22.19.19_jiti@2.7.0_/node_modules/vitest/dist/index.js", {"importedNames":["describe","it","expect","vi"]});
+const __vite_ssr_import_1__ = await __vite_ssr_import__("/node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.1_@types+react-dom@19.2.3_@type_6d47d6ccd2a6a07f1dbfe4f0136d418d/node_modules/@testing-library/react/dist/index.js", {"importedNames":["render"]});
+const __vite_ssr_import_2__ = await __vite_ssr_import__("/src/components/sections/diagram/DiagramCanvas.tsx", {"importedNames":["DiagramCanvas"]});
+const __vite_ssr_import_3__ = await __vite_ssr_import__("/node_modules/.pnpm/react@19.2.6/node_modules/react/jsx-dev-runtime.js", {"importedNames":["jsxDEV"]});
+
+
+
+var _jsxFileName = "/Users/andreugarcia/Documents/AZENT/azent-es/src/components/sections/diagram/DiagramCanvas.test.tsx";
+
+(0,__vite_ssr_import_0__.describe)("DiagramCanvas", () => {
+	(0,__vite_ssr_import_0__.it)("renders without crashing with empty diagram (client-only wrapper)", () => {
+		const { container } = (0,__vite_ssr_import_1__.render)(/* @__PURE__ */ (0,__vite_ssr_import_3__.jsxDEV)((0,__vite_ssr_import_2__.DiagramCanvas), { data: {
+			nodes: [],
+			edges: []
+		} }, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 8,
+			columnNumber: 7
+		}, this));
+		(0,__vite_ssr_import_0__.expect)(container.querySelector("[data-diagram-canvas]")).toBeTruthy();
+	});
+	(0,__vite_ssr_import_0__.it)("marks every node and edge as entering on first mount", async () => {
+		const data = {
+			nodes: [{
+				id: "a",
+				label: "A",
+				x: 0,
+				y: 0
+			}, {
+				id: "b",
+				label: "B",
+				x: 100,
+				y: 0
+			}],
+			edges: [{
+				id: "e1",
+				source: "a",
+				target: "b"
+			}]
+		};
+		const { container, findAllByText } = (0,__vite_ssr_import_1__.render)(/* @__PURE__ */ (0,__vite_ssr_import_3__.jsxDEV)((0,__vite_ssr_import_2__.DiagramCanvas), { data }, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 21,
+			columnNumber: 49
+		}, this));
+		// Wait one tick for the ClientOnly wrapper to mount.
+		await findAllByText("A");
+		const nodes = container.querySelectorAll(".azent-node");
+		(0,__vite_ssr_import_0__.expect)(nodes.length).toBe(2);
+		nodes.forEach((n) => {
+			(0,__vite_ssr_import_0__.expect)(n.classList.contains("azent-node--entering")).toBe(true);
+		});
+	});
+	(0,__vite_ssr_import_0__.it)("keeps a removed node mounted for ~280ms with the exiting flag, then drops it", async () => {
+		__vite_ssr_import_0__.vi.useFakeTimers();
+		try {
+			const initialData = {
+				nodes: [{
+					id: "a",
+					label: "A",
+					x: 0,
+					y: 0
+				}, {
+					id: "b",
+					label: "B",
+					x: 100,
+					y: 0
+				}],
+				edges: []
+			};
+			const { container, rerender, findAllByText } = (0,__vite_ssr_import_1__.render)(/* @__PURE__ */ (0,__vite_ssr_import_3__.jsxDEV)((0,__vite_ssr_import_2__.DiagramCanvas), { data: initialData }, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 41,
+				columnNumber: 61
+			}, this));
+			await __vite_ssr_import_0__.vi.runOnlyPendingTimersAsync();
+			await findAllByText("A");
+			const nextData = {
+				nodes: [{
+					id: "a",
+					label: "A",
+					x: 0,
+					y: 0
+				}],
+				edges: []
+			};
+			rerender(/* @__PURE__ */ (0,__vite_ssr_import_3__.jsxDEV)((0,__vite_ssr_import_2__.DiagramCanvas), { data: nextData }, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 49,
+				columnNumber: 16
+			}, this));
+			// Right after the update, both A and B are still mounted; B is exiting.
+			const exiting = container.querySelector(".azent-node--exiting");
+			(0,__vite_ssr_import_0__.expect)(exiting).toBeTruthy();
+			(0,__vite_ssr_import_0__.expect)(container.querySelectorAll(".azent-node").length).toBe(2);
+			// Advance past the exit duration. B unmounts.
+			__vite_ssr_import_0__.vi.advanceTimersByTime(320);
+			(0,__vite_ssr_import_0__.expect)(container.querySelectorAll(".azent-node").length).toBe(1);
+		} finally {
+			__vite_ssr_import_0__.vi.useRealTimers();
+		}
+	});
+});
+//# sourceMappingSource=vite-generated
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUNBOzs7Ozs7O0dBRUEsZ0NBQVMsdUJBQXVCO0lBQzlCLDBCQUFHLDJFQUEyRTtFQUM1RSxNQUFNLEVBQUUsaUJBQWMsOEJBQ3BCLG9EQUFDLHNDQUFELEVBQWUsTUFBTTtHQUFFLE9BQU8sQ0FBQztHQUFHLE9BQU8sQ0FBQztFQUFFLEVBQUk7Ozs7VUFDbEQ7S0FDQSw4QkFBTyxVQUFVLGNBQWMsdUJBQXVCLENBQUMsRUFBRSxXQUFXO0NBQ3RFLENBQUM7SUFFRCwwQkFBRyx3REFBd0QsWUFBWTtFQUNyRSxNQUFNLE9BQU87R0FDWCxPQUFPLENBQ0w7SUFBRSxJQUFJO0lBQUssT0FBTztJQUFLLEdBQUc7SUFBRyxHQUFHO0dBQUUsR0FDbEM7SUFBRSxJQUFJO0lBQUssT0FBTztJQUFLLEdBQUc7SUFBSyxHQUFHO0dBQUUsQ0FDdEM7R0FDQSxPQUFPLENBQUM7SUFBRSxJQUFJO0lBQU0sUUFBUTtJQUFLLFFBQVE7R0FBSSxDQUFDO0VBQ2hEO0VBQ0EsTUFBTSxFQUFFLFdBQVcscUJBQWtCLDhCQUFPLG9EQUFDLHNDQUFELEVBQXFCLEtBQU87Ozs7VUFBQzs7RUFFekUsTUFBTSxjQUFjLEdBQUc7RUFDdkIsTUFBTSxRQUFRLFVBQVUsaUJBQWlCLGFBQWE7S0FDdEQsOEJBQU8sTUFBTSxNQUFNLEVBQUUsS0FBSyxDQUFDO0VBQzNCLE1BQU0sU0FBUyxNQUFNO01BQ25CLDhCQUFPLEVBQUUsVUFBVSxTQUFTLHNCQUFzQixDQUFDLEVBQUUsS0FBSyxJQUFJO0VBQ2hFLENBQUM7Q0FDSCxDQUFDO0lBRUQsMEJBQUcsZ0ZBQWdGLFlBQVk7RUFDN0YseUJBQUcsY0FBYztFQUNqQixJQUFJO0dBQ0YsTUFBTSxjQUFjO0lBQ2xCLE9BQU8sQ0FDTDtLQUFFLElBQUk7S0FBSyxPQUFPO0tBQUssR0FBRztLQUFHLEdBQUc7SUFBRSxHQUNsQztLQUFFLElBQUk7S0FBSyxPQUFPO0tBQUssR0FBRztLQUFLLEdBQUc7SUFBRSxDQUN0QztJQUNBLE9BQU8sQ0FBQztHQUNWO0dBQ0EsTUFBTSxFQUFFLFdBQVcsVUFBVSxxQkFBa0IsOEJBQU8sb0RBQUMsc0NBQUQsRUFBZSxNQUFNLFlBQWM7Ozs7V0FBQztHQUMxRixNQUFNLHlCQUFHLDBCQUEwQjtHQUNuQyxNQUFNLGNBQWMsR0FBRztHQUV2QixNQUFNLFdBQVc7SUFDZixPQUFPLENBQUM7S0FBRSxJQUFJO0tBQUssT0FBTztLQUFLLEdBQUc7S0FBRyxHQUFHO0lBQUUsQ0FBQztJQUMzQyxPQUFPLENBQUM7R0FDVjtHQUNBLFNBQVMsb0RBQUMsc0NBQUQsRUFBZSxNQUFNLFNBQVc7Ozs7V0FBQzs7R0FHMUMsTUFBTSxVQUFVLFVBQVUsY0FBYyxzQkFBc0I7TUFDOUQsOEJBQU8sT0FBTyxFQUFFLFdBQVc7TUFDM0IsOEJBQU8sVUFBVSxpQkFBaUIsYUFBYSxFQUFFLE1BQU0sRUFBRSxLQUFLLENBQUM7O0dBRy9ELHlCQUFHLG9CQUFvQixHQUFHO01BQzFCLDhCQUFPLFVBQVUsaUJBQWlCLGFBQWEsRUFBRSxNQUFNLEVBQUUsS0FBSyxDQUFDO0VBQ2pFLFVBQVU7R0FDUix5QkFBRyxjQUFjO0VBQ25CO0NBQ0YsQ0FBQztBQUNILENBQUMiLCJuYW1lcyI6W10sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIkRpYWdyYW1DYW52YXMudGVzdC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgZGVzY3JpYmUsIGl0LCBleHBlY3QsIHZpIH0gZnJvbSAndml0ZXN0J1xuaW1wb3J0IHsgcmVuZGVyIH0gZnJvbSAnQHRlc3RpbmctbGlicmFyeS9yZWFjdCdcbmltcG9ydCB7IERpYWdyYW1DYW52YXMgfSBmcm9tICcuL0RpYWdyYW1DYW52YXMnXG5cbmRlc2NyaWJlKCdEaWFncmFtQ2FudmFzJywgKCkgPT4ge1xuICBpdCgncmVuZGVycyB3aXRob3V0IGNyYXNoaW5nIHdpdGggZW1wdHkgZGlhZ3JhbSAoY2xpZW50LW9ubHkgd3JhcHBlciknLCAoKSA9PiB7XG4gICAgY29uc3QgeyBjb250YWluZXIgfSA9IHJlbmRlcihcbiAgICAgIDxEaWFncmFtQ2FudmFzIGRhdGE9e3sgbm9kZXM6IFtdLCBlZGdlczogW10gfX0gLz4sXG4gICAgKVxuICAgIGV4cGVjdChjb250YWluZXIucXVlcnlTZWxlY3RvcignW2RhdGEtZGlhZ3JhbS1jYW52YXNdJykpLnRvQmVUcnV0aHkoKVxuICB9KVxuXG4gIGl0KCdtYXJrcyBldmVyeSBub2RlIGFuZCBlZGdlIGFzIGVudGVyaW5nIG9uIGZpcnN0IG1vdW50JywgYXN5bmMgKCkgPT4ge1xuICAgIGNvbnN0IGRhdGEgPSB7XG4gICAgICBub2RlczogW1xuICAgICAgICB7IGlkOiAnYScsIGxhYmVsOiAnQScsIHg6IDAsIHk6IDAgfSxcbiAgICAgICAgeyBpZDogJ2InLCBsYWJlbDogJ0InLCB4OiAxMDAsIHk6IDAgfSxcbiAgICAgIF0sXG4gICAgICBlZGdlczogW3sgaWQ6ICdlMScsIHNvdXJjZTogJ2EnLCB0YXJnZXQ6ICdiJyB9XSxcbiAgICB9XG4gICAgY29uc3QgeyBjb250YWluZXIsIGZpbmRBbGxCeVRleHQgfSA9IHJlbmRlcig8RGlhZ3JhbUNhbnZhcyBkYXRhPXtkYXRhfSAvPilcbiAgICAvLyBXYWl0IG9uZSB0aWNrIGZvciB0aGUgQ2xpZW50T25seSB3cmFwcGVyIHRvIG1vdW50LlxuICAgIGF3YWl0IGZpbmRBbGxCeVRleHQoJ0EnKVxuICAgIGNvbnN0IG5vZGVzID0gY29udGFpbmVyLnF1ZXJ5U2VsZWN0b3JBbGwoJy5hemVudC1ub2RlJylcbiAgICBleHBlY3Qobm9kZXMubGVuZ3RoKS50b0JlKDIpXG4gICAgbm9kZXMuZm9yRWFjaCgobikgPT4ge1xuICAgICAgZXhwZWN0KG4uY2xhc3NMaXN0LmNvbnRhaW5zKCdhemVudC1ub2RlLS1lbnRlcmluZycpKS50b0JlKHRydWUpXG4gICAgfSlcbiAgfSlcblxuICBpdCgna2VlcHMgYSByZW1vdmVkIG5vZGUgbW91bnRlZCBmb3IgfjI4MG1zIHdpdGggdGhlIGV4aXRpbmcgZmxhZywgdGhlbiBkcm9wcyBpdCcsIGFzeW5jICgpID0+IHtcbiAgICB2aS51c2VGYWtlVGltZXJzKClcbiAgICB0cnkge1xuICAgICAgY29uc3QgaW5pdGlhbERhdGEgPSB7XG4gICAgICAgIG5vZGVzOiBbXG4gICAgICAgICAgeyBpZDogJ2EnLCBsYWJlbDogJ0EnLCB4OiAwLCB5OiAwIH0sXG4gICAgICAgICAgeyBpZDogJ2InLCBsYWJlbDogJ0InLCB4OiAxMDAsIHk6IDAgfSxcbiAgICAgICAgXSxcbiAgICAgICAgZWRnZXM6IFtdLFxuICAgICAgfVxuICAgICAgY29uc3QgeyBjb250YWluZXIsIHJlcmVuZGVyLCBmaW5kQWxsQnlUZXh0IH0gPSByZW5kZXIoPERpYWdyYW1DYW52YXMgZGF0YT17aW5pdGlhbERhdGF9IC8+KVxuICAgICAgYXdhaXQgdmkucnVuT25seVBlbmRpbmdUaW1lcnNBc3luYygpXG4gICAgICBhd2FpdCBmaW5kQWxsQnlUZXh0KCdBJylcblxuICAgICAgY29uc3QgbmV4dERhdGEgPSB7XG4gICAgICAgIG5vZGVzOiBbeyBpZDogJ2EnLCBsYWJlbDogJ0EnLCB4OiAwLCB5OiAwIH1dLFxuICAgICAgICBlZGdlczogW10sXG4gICAgICB9XG4gICAgICByZXJlbmRlcig8RGlhZ3JhbUNhbnZhcyBkYXRhPXtuZXh0RGF0YX0gLz4pXG5cbiAgICAgIC8vIFJpZ2h0IGFmdGVyIHRoZSB1cGRhdGUsIGJvdGggQSBhbmQgQiBhcmUgc3RpbGwgbW91bnRlZDsgQiBpcyBleGl0aW5nLlxuICAgICAgY29uc3QgZXhpdGluZyA9IGNvbnRhaW5lci5xdWVyeVNlbGVjdG9yKCcuYXplbnQtbm9kZS0tZXhpdGluZycpXG4gICAgICBleHBlY3QoZXhpdGluZykudG9CZVRydXRoeSgpXG4gICAgICBleHBlY3QoY29udGFpbmVyLnF1ZXJ5U2VsZWN0b3JBbGwoJy5hemVudC1ub2RlJykubGVuZ3RoKS50b0JlKDIpXG5cbiAgICAgIC8vIEFkdmFuY2UgcGFzdCB0aGUgZXhpdCBkdXJhdGlvbi4gQiB1bm1vdW50cy5cbiAgICAgIHZpLmFkdmFuY2VUaW1lcnNCeVRpbWUoMzIwKVxuICAgICAgZXhwZWN0KGNvbnRhaW5lci5xdWVyeVNlbGVjdG9yQWxsKCcuYXplbnQtbm9kZScpLmxlbmd0aCkudG9CZSgxKVxuICAgIH0gZmluYWxseSB7XG4gICAgICB2aS51c2VSZWFsVGltZXJzKClcbiAgICB9XG4gIH0pXG59KVxuIl0sImZpbGUiOiIvc3JjL2NvbXBvbmVudHMvc2VjdGlvbnMvZGlhZ3JhbS9EaWFncmFtQ2FudmFzLnRlc3QudHN4In0=
+
+//# vitestCache=W3siZmlsZSI6IjEiLCJpZCI6IjEiLCJ1cmwiOiIyIiwiaW1wb3J0ZWRVcmxzIjoiMyIsIm1hcHBpbmdzIjpmYWxzZX0sIi9Vc2Vycy9hbmRyZXVnYXJjaWEvRG9jdW1lbnRzL0FaRU5UL2F6ZW50LWVzL3NyYy9jb21wb25lbnRzL3NlY3Rpb25zL2RpYWdyYW0vRGlhZ3JhbUNhbnZhcy50ZXN0LnRzeCIsIi9zcmMvY29tcG9uZW50cy9zZWN0aW9ucy9kaWFncmFtL0RpYWdyYW1DYW52YXMudGVzdC50c3giLFtdXQ==

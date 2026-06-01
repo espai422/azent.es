@@ -1078,7 +1078,7 @@ body {
 /* Diagram iterative streaming — move transitions and enter/exit keyframes. */
 
 .react-flow__node {
-  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 1000ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes azent-node-enter {
@@ -1092,16 +1092,16 @@ body {
 }
 
 .azent-node--entering {
-  animation: azent-node-enter 400ms ease-out forwards;
+  animation: azent-node-enter 700ms ease-out forwards;
 }
 
 .azent-node--exiting {
-  animation: azent-node-exit 280ms ease-in forwards;
+  animation: azent-node-exit 500ms ease-in forwards;
   pointer-events: none;
 }
 
 .azent-edge__path {
-  transition: stroke 300ms ease-out, stroke-width 300ms ease-out, opacity 240ms ease-in;
+  transition: stroke 500ms ease-out, stroke-width 500ms ease-out, opacity 400ms ease-in;
 }
 
 @keyframes azent-edge-label-in {
@@ -1110,5 +1110,5 @@ body {
 }
 
 .azent-edge__label-wrap {
-  animation: azent-edge-label-in 300ms ease-out forwards;
+  animation: azent-edge-label-in 500ms ease-out forwards;
 }
