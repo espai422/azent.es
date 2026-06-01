@@ -128,6 +128,23 @@ describe('diffDiagram', () => {
     expect(diff.movedNodeIds).toEqual(new Set(['a']))
     expect(diff.changedLabelNodeIds).toEqual(new Set(['a']))
   })
+
+  it('flags a brand-new edge as entering using source->target when no id', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 80, y: 0 },
+      ],
+      edges: [],
+    }
+    const next: DiagramJSON = {
+      nodes: prev.nodes,
+      edges: [{ source: 'a', target: 'b' }],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.enteringEdgeIds).toEqual(new Set(['a->b']))
+    expect(diff.exitingEdgeIds.size).toBe(0)
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.

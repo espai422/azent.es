@@ -59,12 +59,18 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
 
   const prevEdgeById = new Map(prev.edges.map((e) => [edgeIdentity(e), e]))
   const nextEdgeIds = new Set(next.edges.map((e) => edgeIdentity(e)))
-  void prevEdgeById
 
   for (const e of prev.edges) {
     const id = edgeIdentity(e)
     if (!nextEdgeIds.has(id)) {
       diff.exitingEdgeIds.add(id)
+    }
+  }
+
+  for (const e of next.edges) {
+    const id = edgeIdentity(e)
+    if (!prevEdgeById.has(id)) {
+      diff.enteringEdgeIds.add(id)
     }
   }
 
