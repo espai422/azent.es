@@ -44,6 +44,24 @@ describe('diffDiagram', () => {
     expect(diff.exitingEdgeIds.size).toBe(0)
     expect(diff.changedEdgeIds.size).toBe(0)
   })
+
+  it('flags a brand-new node as entering, leaves others alone', () => {
+    const prev: DiagramJSON = {
+      nodes: [{ id: 'a', label: 'A', x: 0, y: 0 }],
+      edges: [],
+    }
+    const next: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 100, y: 0 },
+      ],
+      edges: [],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.enteringNodeIds).toEqual(new Set(['b']))
+    expect(diff.movedNodeIds.size).toBe(0)
+    expect(diff.exitingNodeIds.size).toBe(0)
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.

@@ -37,8 +37,13 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
   const prevNodeById = new Map(prev.nodes.map((n) => [n.id, n]))
   const nextNodeIds = new Set(next.nodes.map((n) => n.id))
 
-  // Future case branches (add/remove/move/label) build on these.
-  void prevNodeById
+  for (const n of next.nodes) {
+    if (!prevNodeById.has(n.id)) {
+      diff.enteringNodeIds.add(n.id)
+    }
+  }
+
+  // Future case branches (remove/move/label) build on these.
   void nextNodeIds
 
   const prevEdgeById = new Map(prev.edges.map((e) => [edgeIdentity(e), e]))
