@@ -55,4 +55,18 @@ describe('AzentNode', () => {
     const root = container.querySelector('.azent-node')
     expect(root?.classList.contains('azent-node--exiting')).toBe(true)
   })
+
+  it('uses labelRev as the span key so re-renders mount a fresh data-flash span', async () => {
+    const { container, rerender } = render(
+      <AzentNode {...makeProps({ label: 'A', labelRev: 1 })} />,
+    )
+    const first = container.querySelector('span[data-flash]')
+    expect(first?.textContent).toBe('A')
+
+    rerender(<AzentNode {...makeProps({ label: 'B', labelRev: 2 })} />)
+    const second = container.querySelector('span[data-flash]')
+    expect(second?.textContent).toBe('B')
+    // The keys differ so the DOM node identity must have changed.
+    expect(first).not.toBe(second)
+  })
 })
