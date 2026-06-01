@@ -45,4 +45,33 @@ describe('AzentEdge', () => {
     // proves the entering-branch ran.
     expect(path?.style.strokeDasharray).not.toBe('')
   })
+
+  it('wraps the label with a key based on edgeRev for fade-swap', () => {
+    const { container, rerender } = render(
+      <svg>
+        <AzentEdge {...makeProps({ edgeRev: 0 }, 'antes')} />
+      </svg>,
+    )
+    const first = container.querySelector('.azent-edge__label-wrap')
+    expect(first?.textContent).toBe('antes')
+
+    rerender(
+      <svg>
+        <AzentEdge {...makeProps({ edgeRev: 1 }, 'después')} />
+      </svg>,
+    )
+    const second = container.querySelector('.azent-edge__label-wrap')
+    expect(second?.textContent).toBe('después')
+    expect(first).not.toBe(second)
+  })
+
+  it('drops opacity to 0 in inline style when exiting is true', () => {
+    const { container } = render(
+      <svg>
+        <AzentEdge {...makeProps({ exiting: true })} />
+      </svg>,
+    )
+    const path = container.querySelector('path.azent-edge__path') as SVGPathElement | null
+    expect(path?.style.opacity).toBe('0')
+  })
 })

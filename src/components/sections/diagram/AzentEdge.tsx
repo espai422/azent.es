@@ -33,6 +33,7 @@ export function AzentEdge({
   const highlight = data?.highlight === true
   const stroke = highlight ? 'var(--prose-accent)' : 'var(--prose-muted)'
   const opacity = highlight ? 1 : 0.65
+  const exiting = data?.exiting === true
 
   const pathRef = useRef<SVGPathElement>(null)
 
@@ -64,23 +65,25 @@ export function AzentEdge({
         className="azent-edge__path"
         fill="none"
         markerEnd={typeof markerEnd === 'string' ? markerEnd : undefined}
-        style={{ stroke, strokeWidth: 1.25, opacity }}
+        style={{ stroke, strokeWidth: 1.25, opacity: exiting ? 0 : opacity }}
       />
       {label && (
-        <text
-          x={labelX}
-          y={labelY}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          style={{
-            fontSize: 10,
-            fill: 'var(--prose-muted)',
-            fontFamily: 'var(--font-sans)',
-            pointerEvents: 'none',
-          }}
-        >
-          {label as string}
-        </text>
+        <g key={data?.edgeRev ?? 0} className="azent-edge__label-wrap">
+          <text
+            x={labelX}
+            y={labelY}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            style={{
+              fontSize: 10,
+              fill: 'var(--prose-muted)',
+              fontFamily: 'var(--font-sans)',
+              pointerEvents: 'none',
+            }}
+          >
+            {label as string}
+          </text>
+        </g>
       )}
       <circle r="3" fill={stroke} opacity="0.9">
         {/* @ts-ignore - animateMotion is valid SVG, TS types lag */}
