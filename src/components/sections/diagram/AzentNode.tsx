@@ -1,5 +1,8 @@
 import { Handle, Position } from '@xyflow/react'
 import type { NodeProps, Node } from '@xyflow/react'
+import { useEffect, useRef } from 'react'
+import { streamFlashSpansIn } from '#/utils/streamFlash'
+import { flashBlockOutline } from '#/utils/blockAnimations'
 
 export type AzentNodeData = {
   label: string
@@ -17,9 +20,38 @@ const HANDLE_STYLE = {
 } as const
 
 export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
+  const { label, entering, exiting, labelRev = 0 } = data
+  const containerRef = useRef<HTMLDivElement>(null)
+  const labelBoxRef = useRef<HTMLDivElement>(null)
+
+  // Trigger the orange outline flash + label tipea when entering or whenever
+  // labelRev bumps. Each effect run is independent — `streamFlashSpansIn`
+  // skips spans already marked `data-streamed`, so the `key={labelRev}` on
+  // the span guarantees a fresh DOM node and a fresh tipea.
+  useEffect(() => {
+    if (!labelBoxRef.current) return
+    streamFlashSpansIn(labelBoxRef.current)
+  }, [entering, labelRev])
+
+  useEffect(() => {
+    if (entering && containerRef.current) {
+      // Guard: jsdom does not implement element.animate
+      if (typeof containerRef.current.animate === 'function') {
+        flashBlockOutline(containerRef.current, 600)
+      }
+    }
+  }, [entering])
+
+  const flashable = entering || labelRev > 0
+
   return (
     <div
-      className="azent-node"
+      ref={containerRef}
+      className={[
+        'azent-node',
+        entering ? 'azent-node--entering' : '',
+        exiting ? 'azent-node--exiting' : '',
+      ].filter(Boolean).join(' ')}
       style={{
         background: 'transparent',
         border: '1px solid var(--prose-muted)',
@@ -40,6 +72,7 @@ export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
       <Handle id="t-left"   type="target" position={Position.Left}   style={HANDLE_STYLE} />
       <Handle id="s-left"   type="source" position={Position.Left}   style={HANDLE_STYLE} />
       <div
+        ref={labelBoxRef}
         style={{
           fontSize: 13,
           fontWeight: 500,
@@ -47,7 +80,11 @@ export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
           letterSpacing: '0.005em',
         }}
       >
-        {data.label}
+        {flashable ? (
+          <span key={labelRev} data-flash="">{label}</span>
+        ) : (
+          label
+        )}
       </div>
     </div>
   )

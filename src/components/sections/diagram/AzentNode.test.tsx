@@ -12,6 +12,12 @@ vi.mock('@xyflow/react', async (importOriginal) => {
   }
 })
 
+// Prevent streamFlashSpansIn from clearing span text in tests (it starts async
+// streaming which wipes textContent immediately on effect run).
+vi.mock('#/utils/streamFlash', () => ({ streamFlashSpansIn: vi.fn() }))
+// Prevent flashBlockOutline from calling element.animate (not in jsdom).
+vi.mock('#/utils/blockAnimations', () => ({ flashBlockOutline: vi.fn() }))
+
 type Data = { label: string; entering?: boolean; exiting?: boolean; labelRev?: number }
 
 function makeProps(data: Data): NodeProps<Node<Data>> {
@@ -24,5 +30,29 @@ describe('AzentNode', () => {
   it('renders the label text', () => {
     const { getByText } = render(<AzentNode {...makeProps({ label: 'Hola' })} />)
     expect(getByText('Hola')).toBeTruthy()
+  })
+
+  it('applies the entering class when entering is true', () => {
+    const { container } = render(
+      <AzentNode {...makeProps({ label: 'Hola', entering: true })} />,
+    )
+    const root = container.querySelector('.azent-node')
+    expect(root?.classList.contains('azent-node--entering')).toBe(true)
+  })
+
+  it('wraps the label in a data-flash span when entering is true', () => {
+    const { container } = render(
+      <AzentNode {...makeProps({ label: 'Hola', entering: true })} />,
+    )
+    const span = container.querySelector('span[data-flash]')
+    expect(span?.textContent).toBe('Hola')
+  })
+
+  it('applies the exiting class when exiting is true', () => {
+    const { container } = render(
+      <AzentNode {...makeProps({ label: 'Hola', exiting: true })} />,
+    )
+    const root = container.querySelector('.azent-node')
+    expect(root?.classList.contains('azent-node--exiting')).toBe(true)
   })
 })
