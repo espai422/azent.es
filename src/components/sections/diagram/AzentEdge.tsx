@@ -1,5 +1,6 @@
-import { BaseEdge, getBezierPath } from '@xyflow/react'
+import { getBezierPath } from '@xyflow/react'
 import type { EdgeProps, Edge } from '@xyflow/react'
+import { useLayoutEffect, useRef } from 'react'
 
 export type AzentEdgeData = {
   highlight?: boolean
@@ -33,13 +34,36 @@ export function AzentEdge({
   const stroke = highlight ? 'var(--prose-accent)' : 'var(--prose-muted)'
   const opacity = highlight ? 1 : 0.65
 
+  const pathRef = useRef<SVGPathElement>(null)
+
+  useLayoutEffect(() => {
+    if (!data?.entering) return
+    const path = pathRef.current
+    if (!path) return
+    const length = typeof path.getTotalLength === 'function' ? path.getTotalLength() || 1 : 1
+    path.style.strokeDasharray = String(length)
+    path.style.strokeDashoffset = String(length)
+    if (typeof path.animate !== 'function') return
+    const animation = path.animate(
+      [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
+      { duration: 700, easing: 'ease-out', fill: 'forwards' },
+    )
+    return () => {
+      animation.cancel()
+      path.style.strokeDasharray = ''
+      path.style.strokeDashoffset = ''
+    }
+  }, [data?.entering, edgePath])
+
   return (
     <>
-      <BaseEdge
+      <path
+        ref={pathRef}
         id={id}
-        path={edgePath}
-        markerEnd={markerEnd}
+        d={edgePath}
         className="azent-edge__path"
+        fill="none"
+        markerEnd={typeof markerEnd === 'string' ? markerEnd : undefined}
         style={{ stroke, strokeWidth: 1.25, opacity }}
       />
       {label && (

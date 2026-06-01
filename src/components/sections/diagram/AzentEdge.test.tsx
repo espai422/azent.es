@@ -31,4 +31,18 @@ describe('AzentEdge', () => {
     )
     expect(container.querySelector('path')).toBeTruthy()
   })
+
+  it('sets stroke-dasharray and dashoffset on the path when entering is true', () => {
+    const { container } = render(
+      <svg>
+        <AzentEdge {...makeProps({ entering: true })} />
+      </svg>,
+    )
+    const path = container.querySelector('path.azent-edge__path') as SVGPathElement | null
+    expect(path).toBeTruthy()
+    // In jsdom getTotalLength returns 0 for synthetic paths, so we only
+    // verify that the inline-style dasharray is set (even to "0"), which
+    // proves the entering-branch ran.
+    expect(path?.style.strokeDasharray).not.toBe('')
+  })
 })
