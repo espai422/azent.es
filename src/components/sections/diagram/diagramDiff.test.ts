@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { diffDiagram, edgeIdentity } from './diagramDiff'
 import type { DiagramJSON } from './types'
 
-const empty = (): DiagramJSON => ({ nodes: [], edges: [] })
-
 describe('diffDiagram', () => {
   it('treats every node and edge as entering when prev is null', () => {
     const next: DiagramJSON = {
@@ -197,7 +195,41 @@ describe('diffDiagram', () => {
     const diff = diffDiagram(prev, next)
     expect(diff.changedEdgeIds).toEqual(new Set(['e1']))
   })
-})
 
-// Unused but keeps the import warning quiet for future cases.
-void empty
+  it('handles a mixed scenario with adds, moves, removals, label changes, and edge mutations', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'keep', label: 'Keep', x: 0, y: 0 },
+        { id: 'move', label: 'Move', x: 0, y: 100 },
+        { id: 'rename', label: 'Old', x: 0, y: 200 },
+        { id: 'remove', label: 'Remove', x: 0, y: 300 },
+      ],
+      edges: [
+        { id: 'e-keep', source: 'keep', target: 'move' },
+        { id: 'e-changed', source: 'move', target: 'rename', label: 'antes' },
+        { id: 'e-remove', source: 'rename', target: 'remove' },
+      ],
+    }
+    const next: DiagramJSON = {
+      nodes: [
+        { id: 'keep', label: 'Keep', x: 0, y: 0 },
+        { id: 'move', label: 'Move', x: 80, y: 100 },
+        { id: 'rename', label: 'Nuevo', x: 0, y: 200 },
+        { id: 'new', label: 'New', x: 0, y: 400 },
+      ],
+      edges: [
+        { id: 'e-keep', source: 'keep', target: 'move' },
+        { id: 'e-changed', source: 'move', target: 'rename', label: 'después' },
+        { id: 'e-new', source: 'rename', target: 'new' },
+      ],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.enteringNodeIds).toEqual(new Set(['new']))
+    expect(diff.exitingNodeIds).toEqual(new Set(['remove']))
+    expect(diff.movedNodeIds).toEqual(new Set(['move']))
+    expect(diff.changedLabelNodeIds).toEqual(new Set(['rename']))
+    expect(diff.enteringEdgeIds).toEqual(new Set(['e-new']))
+    expect(diff.exitingEdgeIds).toEqual(new Set(['e-remove']))
+    expect(diff.changedEdgeIds).toEqual(new Set(['e-changed']))
+  })
+})
