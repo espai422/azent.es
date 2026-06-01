@@ -107,17 +107,89 @@ function DiagramGraph({ data }: Readonly<{ data: DiagramJSON }>) {
   const [nodes, setNodes] = useNodesState<Node<AzentNodeData>>(initial.nodes)
   const [edges, setEdges] = useEdgesState<Edge<AzentEdgeData>>(initial.edges)
 
-  // Persist the initial snapshot as the "previous" baseline so the data-change
-  // effect added in Task 19 has something to diff against.
   useEffect(() => {
+    const prev = prevRef.current
+    const diff = diffDiagram(prev, data)
+
+    // Bump label/edge revisions for changed items.
+    for (const id of diff.changedLabelNodeIds) {
+      labelRevsRef.current.set(id, (labelRevsRef.current.get(id) ?? 0) + 1)
+    }
+    for (const id of diff.changedEdgeIds) {
+      edgeRevsRef.current.set(id, (edgeRevsRef.current.get(id) ?? 0) + 1)
+    }
+
+    // Build the next render set: canonical next + ghost exiting items.
+    const nextNodeMap = new Map(data.nodes.map((n) => [n.id, n]))
+
+    const renderedNodes: Node<AzentNodeData>[] = data.nodes.map((n) =>
+      buildNode(n, {
+        entering: diff.enteringNodeIds.has(n.id),
+        exiting: false,
+        labelRev: labelRevsRef.current.get(n.id) ?? 0,
+      }),
+    )
+    if (prev) {
+      for (const n of prev.nodes) {
+        if (diff.exitingNodeIds.has(n.id) && !diff.enteringNodeIds.has(n.id)) {
+          renderedNodes.push(buildNode(n, { entering: false, exiting: true, labelRev: 0 }))
+        }
+      }
+    }
+
+    const renderedEdges: Edge<AzentEdgeData>[] = data.edges.map((e) =>
+      buildEdge(e, nextNodeMap, {
+        entering: diff.enteringEdgeIds.has(edgeIdentity(e)),
+        exiting: false,
+        edgeRev: edgeRevsRef.current.get(edgeIdentity(e)) ?? 0,
+      }),
+    )
+    if (prev) {
+      const prevNodeMap = new Map(prev.nodes.map((n) => [n.id, n]))
+      for (const e of prev.edges) {
+        const id = edgeIdentity(e)
+        if (diff.exitingEdgeIds.has(id) && !diff.enteringEdgeIds.has(id)) {
+          renderedEdges.push(buildEdge(e, prevNodeMap, { entering: false, exiting: true, edgeRev: 0 }))
+        }
+      }
+    }
+
+    setNodes(renderedNodes)
+    setEdges(renderedEdges)
+
+    // Schedule cleanup. Drop exiting items after their animation finishes.
+    const nodeTimer = window.setTimeout(() => {
+      setNodes((current) => current.filter((n) => !diff.exitingNodeIds.has(n.id) || diff.enteringNodeIds.has(n.id)))
+    }, 280)
+    const edgeTimer = window.setTimeout(() => {
+      setEdges((current) =>
+        current.filter((e) => {
+          const id = edgeIdentity({ id: e.id, source: e.source, target: e.target })
+          return !diff.exitingEdgeIds.has(id) || diff.enteringEdgeIds.has(id)
+        }),
+      )
+    }, 240)
+    const enteringTimer = window.setTimeout(() => {
+      setNodes((current) =>
+        current.map((n) =>
+          n.data.entering ? { ...n, data: { ...n.data, entering: false } } : n,
+        ),
+      )
+      setEdges((current) =>
+        current.map((e) =>
+          e.data?.entering ? { ...e, data: { ...e.data, entering: false } } : e,
+        ),
+      )
+    }, 600)
+
     prevRef.current = data
-    // Quiet unused warnings while the full diff-update logic lands in Task 19.
-    void labelRevsRef
-    void edgeRevsRef
-    void setNodes
-    void setEdges
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    return () => {
+      clearTimeout(nodeTimer)
+      clearTimeout(edgeTimer)
+      clearTimeout(enteringTimer)
+    }
+  }, [data])
 
   return (
     <ReactFlow
