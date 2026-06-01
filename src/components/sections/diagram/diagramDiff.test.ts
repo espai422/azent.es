@@ -145,6 +145,24 @@ describe('diffDiagram', () => {
     expect(diff.enteringEdgeIds).toEqual(new Set(['a->b']))
     expect(diff.exitingEdgeIds.size).toBe(0)
   })
+
+  it('treats an explicit-id edge whose endpoints change as exit + entry', () => {
+    const prev: DiagramJSON = {
+      nodes: [
+        { id: 'a', label: 'A', x: 0, y: 0 },
+        { id: 'b', label: 'B', x: 80, y: 0 },
+        { id: 'c', label: 'C', x: 160, y: 0 },
+      ],
+      edges: [{ id: 'e1', source: 'a', target: 'b' }],
+    }
+    const next: DiagramJSON = {
+      nodes: prev.nodes,
+      edges: [{ id: 'e1', source: 'a', target: 'c' }],
+    }
+    const diff = diffDiagram(prev, next)
+    expect(diff.exitingEdgeIds).toEqual(new Set(['e1']))
+    expect(diff.enteringEdgeIds).toEqual(new Set(['e1']))
+  })
 })
 
 // Unused but keeps the import warning quiet for future cases.

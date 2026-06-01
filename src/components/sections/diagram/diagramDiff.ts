@@ -69,7 +69,13 @@ export function diffDiagram(prev: DiagramJSON | null, next: DiagramJSON): Diagra
 
   for (const e of next.edges) {
     const id = edgeIdentity(e)
-    if (!prevEdgeById.has(id)) {
+    const prevEdge = prevEdgeById.get(id)
+    if (!prevEdge) {
+      diff.enteringEdgeIds.add(id)
+      continue
+    }
+    if (prevEdge.source !== e.source || prevEdge.target !== e.target) {
+      diff.exitingEdgeIds.add(id)
       diff.enteringEdgeIds.add(id)
     }
   }
