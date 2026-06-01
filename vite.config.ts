@@ -9,7 +9,12 @@ import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  server: { host: true },
+  server: {
+    host: true,
+    watch: {
+      ignored: ['**/.codex-browser-agent/**'],
+    },
+  },
   plugins: [
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),
