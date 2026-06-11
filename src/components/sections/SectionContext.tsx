@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useReducer, type React
 import type { DiagramJSON } from './diagram/types'
 import { createId } from '#/utils/id'
 
-export type SectionTheme = 'dark-1' | 'light-2' | 'dark-2' | 'light-1' | 'closing'
+export type SectionTheme = 'dark-1' | 'light-2' | 'dark-2' | 'light-1' | 'orange' | 'closing'
 export type TabVariant = 'center' | 'right' | 'left' | 'none'
 
 export interface SectionConfig {
@@ -35,11 +35,12 @@ export type SectionInput = {
   variables?: Record<string, number>
 }
 
-const COLOR_CYCLE: SectionTheme[] = ['dark-1', 'light-2', 'dark-2', 'light-1']
+// 2 black + 2 white + 1 orange per cycle = the 40/40/20 block distribution.
+const COLOR_CYCLE: SectionTheme[] = ['dark-1', 'light-1', 'orange', 'dark-2', 'light-2']
 const TAB_CYCLE: TabVariant[] = ['center', 'right', 'left']
 
 export function resolveSection(input: SectionInput, nonClosingCount: number): SectionConfig {
-  const theme = input.theme ?? COLOR_CYCLE[nonClosingCount % 4]
+  const theme = input.theme ?? COLOR_CYCLE[nonClosingCount % COLOR_CYCLE.length]
   const tab = theme === 'closing' ? 'none' : (input.tab ?? TAB_CYCLE[nonClosingCount % 3])
   return {
     id: input.id ?? createId(),

@@ -53,14 +53,14 @@ export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
         exiting ? 'azent-node--exiting' : '',
       ].filter(Boolean).join(' ')}
       style={{
-        background: 'transparent',
-        border: '1px solid var(--prose-muted)',
-        borderRadius: 8,
+        background: 'var(--section-bg)',
+        border: '1px solid var(--prose-line)',
+        borderRadius: 0,
         padding: '12px 18px',
         minWidth: 110,
         textAlign: 'center',
         userSelect: 'none',
-        fontFamily: 'var(--font-sans)',
+        fontFamily: 'var(--font-mono)',
       }}
     >
       <Handle id="t-top"    type="target" position={Position.Top}    style={HANDLE_STYLE} />
@@ -74,10 +74,10 @@ export function AzentNode({ data }: NodeProps<Node<AzentNodeData>>) {
       <div
         ref={labelBoxRef}
         style={{
-          fontSize: 13,
-          fontWeight: 500,
+          fontSize: 12,
+          fontWeight: 700,
           color: 'var(--prose-heading)',
-          letterSpacing: '0.005em',
+          letterSpacing: '0.02em',
         }}
       >
         {flashable ? (

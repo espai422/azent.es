@@ -11,7 +11,7 @@ export function DiagramCalculo({ formula, result }: Props) {
       <p className="font-mono text-xs text-[var(--prose-muted)] mb-1 break-words">
         {formula}
       </p>
-      <p className="text-2xl font-semibold tabular-nums text-[var(--prose-heading)]">
+      <p className="text-3xl font-extrabold tabular-nums text-[var(--prose-accent)]">
         {result !== null ? formatResult(result) : '—'}
       </p>
     </div>

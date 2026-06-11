@@ -6,17 +6,20 @@ describe('resolveSection — theme cycle', () => {
   it('assigns dark-1 at position 0', () => {
     expect(resolveSection({ content: '' }, 0).theme).toBe('dark-1')
   })
-  it('assigns light-2 at position 1', () => {
-    expect(resolveSection({ content: '' }, 1).theme).toBe('light-2')
+  it('assigns light-1 at position 1', () => {
+    expect(resolveSection({ content: '' }, 1).theme).toBe('light-1')
   })
-  it('assigns dark-2 at position 2', () => {
-    expect(resolveSection({ content: '' }, 2).theme).toBe('dark-2')
+  it('assigns orange at position 2', () => {
+    expect(resolveSection({ content: '' }, 2).theme).toBe('orange')
   })
-  it('assigns light-1 at position 3', () => {
-    expect(resolveSection({ content: '' }, 3).theme).toBe('light-1')
+  it('assigns dark-2 at position 3', () => {
+    expect(resolveSection({ content: '' }, 3).theme).toBe('dark-2')
   })
-  it('wraps back to dark-1 at position 4', () => {
-    expect(resolveSection({ content: '' }, 4).theme).toBe('dark-1')
+  it('assigns light-2 at position 4', () => {
+    expect(resolveSection({ content: '' }, 4).theme).toBe('light-2')
+  })
+  it('wraps back to dark-1 at position 5', () => {
+    expect(resolveSection({ content: '' }, 5).theme).toBe('dark-1')
   })
   it('respects explicit theme override', () => {
     expect(resolveSection({ content: '', theme: 'dark-2' }, 0).theme).toBe('dark-2')
@@ -88,7 +91,7 @@ describe('sectionsReducer', () => {
     let state = sectionsReducer(empty, { type: 'ADD', payload: { content: 'a' } })
     state = sectionsReducer(state, { type: 'ADD', payload: { content: 'b', theme: 'closing' } })
     state = sectionsReducer(state, { type: 'ADD', payload: { content: 'c' } })
-    expect(state.sections[2].theme).toBe('light-2')
+    expect(state.sections[2].theme).toBe('light-1')
     expect(state.sections[2].tab).toBe('right')
   })
 
@@ -125,7 +128,7 @@ describe('sectionsReducer', () => {
     expect(state.sections[0].content).toBe('new1')
     expect(state.sections[1].content).toBe('new2')
     expect(state.sections[0].theme).toBe('dark-1')
-    expect(state.sections[1].theme).toBe('light-2')
+    expect(state.sections[1].theme).toBe('light-1')
   })
 
   it('ADD preserves topic', () => {

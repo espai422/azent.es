@@ -5,8 +5,10 @@ import appCss from '../styles.css?url'
 
 function NotFound() {
   return (
-    <div className="flex h-screen items-center justify-center bg-white">
-      <p className="text-sm text-gray-400">404 — página no encontrada</p>
+    <div className="flex h-screen items-center justify-center bg-black">
+      <p className="font-mono text-sm uppercase tracking-widest text-white">
+        <span className="text-[#ff4d00]">404</span> — página no encontrada
+      </p>
     </div>
   )
 }

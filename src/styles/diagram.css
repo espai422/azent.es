@@ -28,7 +28,7 @@
 }
 
 .block-section [data-diagram-position] .react-flow {
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .react-flow__node {

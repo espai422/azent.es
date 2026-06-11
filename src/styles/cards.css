@@ -16,19 +16,11 @@
 
 .block-content .block-card {
   position: relative;
-  overflow: hidden;
   min-height: 13rem;
   padding: 1.5rem;
-  border: 1px solid color-mix(in srgb, var(--prose-line) 70%, transparent);
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel) 78%, transparent), transparent 74%),
-    color-mix(in srgb, var(--prose-panel) 52%, transparent);
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    transform 220ms ease;
-  isolation: isolate;
+  border: 1px solid var(--prose-line);
+  background: transparent;
+  transition: transform 160ms ease-out, box-shadow 160ms ease-out;
 }
 
 @media (min-width: 768px) {
@@ -37,60 +29,20 @@
   }
 }
 
-.block-content .block-card::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: 0;
-  background:
-    linear-gradient(
-      115deg,
-      transparent 0%,
-      transparent 30%,
-      color-mix(in srgb, var(--prose-accent) 30%, transparent) 48%,
-      color-mix(in srgb, var(--prose-secondary) 16%, transparent) 54%,
-      transparent 68%,
-      transparent 100%
-    );
-  opacity: 0;
-  transform: translateX(-70%);
-  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  pointer-events: none;
-}
-
 .block-content .block-card::after {
   content: '';
   position: absolute;
-  inset: auto 1rem 1rem auto;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-right: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
-  opacity: 0.5;
+  top: 0;
+  right: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+  background: var(--prose-accent);
   pointer-events: none;
-  z-index: 2;
 }
 
 .block-content .block-card:hover {
-  border-color: color-mix(in srgb, var(--prose-accent) 42%, var(--prose-line));
-  background:
-    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--prose-accent) 18%, transparent), transparent 34%),
-    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel-strong) 88%, transparent), transparent 76%),
-    color-mix(in srgb, var(--prose-panel-strong) 68%, transparent);
-  box-shadow:
-    0 1rem 2.5rem rgba(0, 0, 0, 0.16),
-    0 0 2.25rem color-mix(in srgb, var(--prose-accent) 13%, transparent);
-  transform: translateY(-2px);
-}
-
-.block-content .block-card:hover::before {
-  opacity: 0.82;
-  transform: translateX(36%);
-}
-
-.block-content .block-card > * {
-  position: relative;
-  z-index: 1;
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--prose-shadow);
 }
 
 .block-content .block-card,
@@ -118,15 +70,17 @@
 
 .block-content .block-stat {
   display: block;
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--prose-heading);
+  font-family: var(--font-display) !important;
+  font-variation-settings: 'wdth' 120;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--prose-accent);
   margin-bottom: 0.5rem;
   font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 768px) {
   .block-content .block-stat {
-    font-size: 2.25rem;
+    font-size: 2.4rem;
   }
 }

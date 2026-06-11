@@ -1,15 +1,26 @@
 @theme {
-  --font-sans: 'Inter Variable', sans-serif;
-  --font-display: Georgia, 'Times New Roman', serif;
+  --font-sans: 'Archivo Variable', sans-serif;
+  --font-display: 'Archivo Variable', sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+
+  /* The entire palette. Three inks, nothing in between. */
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-accent: #ff4d00;
 }
 
 * { box-sizing: border-box; }
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #000;
-  color: #fff;
+  background-color: var(--color-ink);
+  color: var(--color-paper);
 }

@@ -10,7 +10,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
       <div class="hero-composition">
         <div class="hero-copy">
           <small>AZENT / Partner técnico</small>
-          <h1>No hacemos software. Transformamos cómo opera tu empresa.</h1>
+          <h1>No hacemos software. <span class="accent">Transformamos</span> cómo opera tu empresa.</h1>
           <p class="lead">Desarrollo de software e inteligencia artificial aplicada al negocio real.
           Nos sentamos contigo, entendemos qué frena el crecimiento y construimos
           los sistemas que lo desbloquean, con o sin IA, según lo que tiene sentido.</p>
@@ -25,6 +25,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'antes-y-despues-ia',
+    theme: 'light-1',
     rule: true,
     content: `
       <div class="section-grid section-grid--wide">
@@ -44,6 +45,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'partner-tecnico',
+    theme: 'orange',
     content: `
       <div class="section-grid">
         <div>
@@ -71,6 +73,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'cuestionamos-sistema',
+    theme: 'dark-2',
     content: `
       <div class="question-layout">
         <div>
@@ -89,6 +92,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'software-e-ia',
+    theme: 'light-2',
     rule: true,
     content: `
       <div class="section-grid section-grid--wide">
@@ -118,6 +122,7 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'pragmaticos',
+    theme: 'dark-1',
     content: `
       <div class="pragmatic-band">
         <div>
@@ -137,7 +142,8 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'cierre-pregunta',
-    theme: 'closing',
+    theme: 'light-1',
+    tab: 'center',
     pinned: true,
     content: `
       <div class="closing-ledger">
@@ -173,7 +179,8 @@ export const INITIAL_SECTIONS: SectionInput[] = [
   },
   {
     id: 'cierre-final',
-    theme: 'closing',
+    theme: 'orange',
+    tab: 'none',
     pinned: true,
     content: `
       <div class="final-statement">

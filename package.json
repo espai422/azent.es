@@ -12,7 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/archivo": "^5.2.8",
+    "@fontsource/space-mono": "^5.2.9",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@openai/codex-sdk": "^0.133.0",
     "@react-three/drei": "^10.7.7",

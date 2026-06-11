@@ -42,15 +42,15 @@ function Chat() {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="mx-auto max-w-2xl space-y-4">
           {messages.length === 0 && (
-            <p className="text-center text-sm text-gray-400">Escribe un mensaje para empezar.</p>
+            <p className="text-center font-mono text-xs uppercase tracking-widest text-black/45">Escribe un mensaje para empezar.</p>
           )}
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
                   m.role === 'user'
                     ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-800'
+                    : 'border border-black text-black'
                 }`}
               >
                 <pre className="whitespace-pre-wrap font-sans">{m.content}</pre>
@@ -59,7 +59,7 @@ function Chat() {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="rounded-2xl bg-gray-100 px-4 py-2.5 text-sm text-gray-400">
+              <div className="border border-black px-4 py-2.5 text-sm text-[#ff4d00]">
                 <span className="animate-pulse">···</span>
               </div>
             </div>
@@ -68,13 +68,13 @@ function Chat() {
         </div>
       </div>
 
-      <div className="border-t border-gray-100 px-4 py-4">
+      <div className="border-t border-black px-4 py-4">
         <form
           className="mx-auto flex max-w-2xl gap-2"
           onSubmit={(e) => { e.preventDefault(); void send() }}
         >
           <input
-            className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-gray-400"
+            className="flex-1 border border-black px-4 py-2.5 text-sm outline-none focus:border-[#ff4d00]"
             placeholder="Escribe un mensaje..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -84,7 +84,7 @@ function Chat() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40"
+            className="bg-[#ff4d00] px-4 py-2.5 text-sm font-bold text-black disabled:opacity-40"
           >
             Enviar
           </button>

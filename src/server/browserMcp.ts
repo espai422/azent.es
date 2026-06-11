@@ -109,7 +109,7 @@ function createBrowserMcpServer() {
       inputSchema: {
         sessionId,
         id: z.string().min(1).describe('Block id returned by add_agent_block.'),
-        html: z.string().min(1).describe('HTML fragment to append. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note. Keep mobile-first responsive design in mind.'),
+        html: z.string().min(1).describe('HTML fragment to append. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note. Flat brutalist style: only black/white/orange via the theme CSS variables, 1px solid borders, no grays, no gradients, no rounded corners, no soft shadows. Keep mobile-first responsive design in mind.'),
       },
     },
     ({ sessionId, id, html }) => invoke('append_to_block', sessionId, { id, html }),
@@ -122,7 +122,7 @@ function createBrowserMcpServer() {
       inputSchema: {
         sessionId,
         id: z.string().min(1),
-        html: z.string().min(1).describe('Complete new HTML for the block. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note.'),
+        html: z.string().min(1).describe('Complete new HTML for the block. Use Tailwind utility classes and the site primitives when useful: reflect-grid, reflect-grid--three, reflect-panel, edge-panel, corner-frame, signal-list, block-cards, block-card, block-stat, accent, outcome-note. Flat brutalist style: only black/white/orange via the theme CSS variables, 1px solid borders, no grays, no gradients, no rounded corners, no soft shadows.'),
         topic: z.string().min(1).optional().describe('New topic label. Omit to keep the existing topic.'),
       },
     },

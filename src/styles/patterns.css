@@ -11,71 +11,37 @@
   margin-top: 1rem;
 }
 
-.block-content .reflect-panel,
-.block-content .edge-panel,
-.block-content .signal-list > * {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
 .block-content .reflect-panel {
+  position: relative;
   min-height: 10rem;
   padding: 1.35rem;
-  border: 1px solid color-mix(in srgb, var(--prose-line) 70%, transparent);
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel) 78%, transparent), transparent 74%),
-    color-mix(in srgb, var(--prose-panel) 52%, transparent);
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    transform 220ms ease;
-}
-
-.block-content .reflect-panel::before,
-.block-content .edge-panel::before,
-.block-content .signal-list > *::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: 0;
-  background:
-    linear-gradient(
-      115deg,
-      transparent 0%,
-      transparent 30%,
-      color-mix(in srgb, var(--prose-accent) 30%, transparent) 48%,
-      color-mix(in srgb, var(--prose-secondary) 16%, transparent) 54%,
-      transparent 68%,
-      transparent 100%
-    );
-  opacity: 0;
-  transform: translateX(-70%);
-  transition: opacity 220ms ease, transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  pointer-events: none;
+  border: 1px solid var(--prose-line);
+  background: transparent;
+  transition: transform 160ms ease-out, box-shadow 160ms ease-out;
 }
 
 .block-content .reflect-panel::after,
 .block-content .corner-frame::after {
   content: '';
   position: absolute;
-  inset: auto 1rem 1rem auto;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-right: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--prose-accent) 45%, transparent);
-  opacity: 0.5;
+  top: 0;
+  right: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+  background: var(--prose-accent);
   pointer-events: none;
-  z-index: 2;
+}
+
+.block-content .reflect-panel:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--prose-shadow);
 }
 
 .block-content .edge-panel {
+  position: relative;
   padding: 1.1rem 1.25rem;
-  border-left: 1px solid color-mix(in srgb, var(--prose-accent) 55%, transparent);
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--prose-accent) 11%, transparent), transparent 68%),
-    color-mix(in srgb, var(--prose-panel) 44%, transparent);
+  border-left: 4px solid var(--prose-accent);
+  background: transparent;
 }
 
 .block-content .signal-list {
@@ -84,8 +50,8 @@
   padding: 0;
   margin: 1.5rem 0 0;
   list-style: none;
-  background: color-mix(in srgb, var(--prose-line) 42%, transparent);
-  border: 1px solid color-mix(in srgb, var(--prose-line) 72%, transparent);
+  background: var(--prose-line);
+  border: 1px solid var(--prose-line);
 }
 
 .block-content .signal-list > * {
@@ -93,41 +59,17 @@
   gap: 0.35rem;
   margin: 0;
   padding: 1rem 1.1rem;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--prose-panel) 46%, transparent), transparent 80%),
-    color-mix(in srgb, var(--prose-panel) 28%, transparent);
-  transition:
-    background-color 220ms ease,
-    box-shadow 220ms ease,
-    transform 220ms ease;
+  background: var(--section-bg);
+  transition: background-color 120ms steps(2, end), color 120ms steps(2, end);
 }
 
-.block-content .reflect-panel:hover,
-.block-content .edge-panel:hover,
 .block-content .signal-list > *:hover {
-  border-color: color-mix(in srgb, var(--prose-accent) 42%, var(--prose-line));
-  background:
-    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--prose-accent) 18%, transparent), transparent 34%),
-    linear-gradient(145deg, color-mix(in srgb, var(--prose-panel-strong) 88%, transparent), transparent 76%),
-    color-mix(in srgb, var(--prose-panel-strong) 68%, transparent);
-  box-shadow:
-    0 1rem 2.5rem rgba(0, 0, 0, 0.16),
-    0 0 2.25rem color-mix(in srgb, var(--prose-accent) 13%, transparent);
-  transform: translateY(-2px);
+  background: var(--prose-hover-bg);
 }
 
-.block-content .reflect-panel:hover::before,
-.block-content .edge-panel:hover::before,
-.block-content .signal-list > *:hover::before {
-  opacity: 0.82;
-  transform: translateX(36%);
-}
-
-.block-content .reflect-panel > *,
-.block-content .edge-panel > *,
-.block-content .signal-list > * > * {
-  position: relative;
-  z-index: 1;
+.block-content .signal-list > *:hover,
+.block-content .signal-list > *:hover * {
+  color: var(--prose-hover-fg);
 }
 
 @media (min-width: 768px) {

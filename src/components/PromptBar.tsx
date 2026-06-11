@@ -99,14 +99,14 @@ export function PromptBar() {
       <div ref={containerRef} className="mx-auto w-full max-w-3xl">
         {lastPrompt && (
           <div className="mb-2 flex flex-col items-center">
-            <div className="pointer-events-auto flex max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-zinc-950/85 px-3 py-2 text-xs leading-5 text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <div className="pointer-events-auto flex max-w-full items-start gap-2 border border-white bg-black px-3 py-2 text-xs leading-5 text-white/70 shadow-[3px_3px_0_#ff4d00]">
               {status === 'sending' ? (
-                <LoaderCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />
+                <LoaderCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-[#ff4d00]" aria-hidden="true" />
               ) : (
-                <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden="true" />
+                <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#ff4d00]" aria-hidden="true" />
               )}
-              <span className="shrink-0 font-medium text-zinc-100">{statusLabel}</span>
-              <span className="mt-1 h-3 w-px shrink-0 bg-white/15" aria-hidden="true" />
+              <span className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-wider text-white">{statusLabel}</span>
+              <span className="mt-1 h-3 w-px shrink-0 bg-white/25" aria-hidden="true" />
               <span className="line-clamp-1 min-w-0 whitespace-pre-wrap break-words sm:line-clamp-3">{lastPrompt}</span>
             </div>
           </div>
@@ -125,12 +125,12 @@ export function PromptBar() {
             return (
               <div
                 key={last.id}
-                className="pointer-events-auto mx-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/82 px-3 py-2 text-xs text-zinc-300 shadow-2xl shadow-black/30 backdrop-blur-xl"
+                className="pointer-events-auto mx-auto flex items-center gap-2 border border-white bg-black px-3 py-2 text-xs text-white/70 shadow-[3px_3px_0_#ff4d00]"
                 style={lockedWidth ? { width: `${lockedWidth}px` } : undefined}
               >
-                {last.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-white" aria-hidden="true" />}
-                {last.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden="true" />}
-                {last.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-300" aria-hidden="true" />}
+                {last.state === 'active' && <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin text-[#ff4d00]" aria-hidden="true" />}
+                {last.state === 'done' && <Check className="h-3.5 w-3.5 shrink-0 text-white" aria-hidden="true" />}
+                {last.state === 'error' && <Wrench className="h-3.5 w-3.5 shrink-0 text-red-400" aria-hidden="true" />}
                 <span className="min-w-0 truncate">{last.label}</span>
               </div>
             )
@@ -139,16 +139,17 @@ export function PromptBar() {
 
         <div className="flex justify-center">
           <div
-            className="flex justify-center overflow-hidden rounded-2xl sm:rounded-[1.4rem]"
+            className="flex justify-center overflow-hidden"
             style={{
               width: visible ? '100%' : '0px',
               transition: 'width 1000ms cubic-bezier(0.22, 1, 0.36, 1)',
+              boxShadow: visible ? '5px 5px 0 #ff4d00' : 'none',
             }}
             aria-hidden={!visible}
             inert={!visible}
           >
             <form
-              className="pointer-events-auto shrink-0 rounded-2xl border border-white/12 bg-neutral-950/88 p-1 shadow-[0_18px_70px_rgba(0,0,0,0.48)] backdrop-blur-2xl sm:rounded-[1.4rem] sm:p-2"
+              className="pointer-events-auto shrink-0 border border-white bg-black p-1 sm:p-2"
               style={lockedWidth ? { width: `${lockedWidth}px` } : undefined}
               autoComplete="off"
               onSubmit={(event) => void handleSubmit(event)}
@@ -158,7 +159,7 @@ export function PromptBar() {
                   ref={textareaRef}
                   aria-label="Prompt para modificar la web"
                   aria-autocomplete="none"
-                  className="min-h-9 flex-1 resize-none bg-transparent px-2 py-1.5 text-[16px] leading-5 text-white outline-none placeholder:text-zinc-500 sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm sm:leading-6"
+                  className="min-h-9 flex-1 resize-none bg-transparent px-2 py-1.5 text-[16px] leading-5 text-white outline-none placeholder:text-white/40 sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm sm:leading-6"
                   id="azent-prompt-composer"
                   name="azent-prompt-composer"
                   placeholder="Pide un cambio en la web..."
@@ -190,7 +191,7 @@ export function PromptBar() {
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-black transition duration-200 hover:scale-[1.03] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400 disabled:hover:scale-100 sm:h-12 sm:w-12 sm:rounded-2xl"
+                  className="grid h-9 w-9 shrink-0 place-items-center bg-[#ff4d00] text-black transition-colors duration-150 hover:bg-white disabled:cursor-not-allowed disabled:bg-transparent disabled:text-white/30 disabled:outline disabled:outline-1 disabled:-outline-offset-1 disabled:outline-white/30 sm:h-12 sm:w-12"
                   aria-label="Enviar prompt"
                   title="Enviar prompt"
                 >
